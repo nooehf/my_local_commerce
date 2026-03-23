@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     supabase.from('reservations').select('*', { count: 'exact', head: true }).eq('business_id', businessId).eq('reservation_date', tomorrow),
     supabase.from('customers').select('*', { count: 'exact', head: true }).eq('business_id', businessId),
     supabase.from('inventory').select('id, current_stock, minimum_stock').eq('business_id', businessId),
-    supabase.from('reservations').select('id, start_time, status, customers(name), services(name)').eq('business_id', businessId).eq('reservation_date', today).order('start_time').limit(5),
+    supabase.from('reservations').select('id, start_time, status, customers(first_name, last_name), services(name)').eq('business_id', businessId).eq('reservation_date', today).order('start_time').limit(5),
     supabase.from('staff_shifts').select('id, start_time, end_time, employees(id, profiles(name))').eq('business_id', businessId).eq('date', today),
   ])
 
@@ -116,7 +116,9 @@ export default async function DashboardPage() {
                   return (
                     <div key={r.id} className="flex items-center justify-between gap-4 rounded-lg p-3 hover:bg-slate-50 transition-colors">
                       <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-semibold text-slate-900 truncate">{customer?.name ?? 'Sin cliente'}</span>
+                        <span className="text-sm font-semibold text-slate-900 truncate">
+                          {customer ? `${customer.first_name} ${customer.last_name || ''}` : 'Sin cliente'}
+                        </span>
                         <span className="text-xs text-slate-500 truncate">{service?.name ?? '—'}</span>
                       </div>
                       <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20 shrink-0">

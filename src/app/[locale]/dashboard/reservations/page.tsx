@@ -25,7 +25,7 @@ export default async function ReservationsPage() {
     .from('reservations')
     .select(`
       id, reservation_date, start_time, end_time, status, notes,
-      customers(name),
+      customers(first_name, last_name),
       services(name),
       employees(name)
     `)
@@ -107,8 +107,8 @@ export default async function ReservationsPage() {
                 const statusInfo = STATUS_LABELS[r.status] ?? { label: r.status, className: 'bg-slate-50 text-slate-600 ring-slate-500/10' }
                 return (
                   <tr key={r.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
-                      {customer?.name ?? '—'}
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6 truncate max-w-[200px]">
+                      {customer ? `${customer.first_name} ${customer.last_name || ''}` : '—'}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">{service?.name ?? '—'}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">{employee?.name ?? '—'}</td>

@@ -28,7 +28,7 @@ export default async function NewReservationPage({
     { data: services },
     { data: employees }
   ] = await Promise.all([
-    supabase.from('customers').select('id, name, phone').eq('business_id', businessId).order('name'),
+    supabase.from('customers').select('id, first_name, last_name, phone').eq('business_id', businessId).order('first_name'),
     supabase.from('services').select('id, name, duration_minutes, price').eq('business_id', businessId).eq('active', true).order('name'),
     supabase.from('employees').select('id, name, position').eq('business_id', businessId).eq('status', 'active').order('name')
   ])
@@ -115,7 +115,7 @@ export default async function NewReservationPage({
               >
                 <option value="">Buscar cliente...</option>
                 {customers?.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
+                  <option key={c.id} value={c.id}>{c.first_name} {c.last_name} {c.phone ? `(${c.phone})` : ''}</option>
                 ))}
               </select>
               <div className="mt-2 text-xs text-slate-500">

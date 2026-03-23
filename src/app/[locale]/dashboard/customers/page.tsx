@@ -1,6 +1,58 @@
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import Link from 'next/link'
 import { Plus, Mail, Phone, Users } from 'lucide-react'
+import { revalidatePath } from 'next/cache'
+import DeleteCustomerButton from '@/components/dashboard/DeleteCustomerButton'
+
+async function deleteCustomerAction(formData: FormData) {
+  'use server'
+  const customerId = formData.get('id') as string
+  const customerUserId = formData.get('user_id') as string
+  
+  const adminClient = createAdminClient()
+
+  // Pre-fetch customer data to get email and user_id if needed
+  const { data: customerData } = await adminClient
+    .from('customers')
+    .select('email, user_id')
+    .eq('id', customerId)
+    .single()
+
+  // 1. Delete CRM record (this will trigger cascading delete on reservations)
+  const { error: customerError } = await adminClient
+    .from('customers')
+    .delete()
+    .eq('id', customerId)
+
+  if (customerError) {
+    console.error('Error deleting customer record:', customerError)
+    throw customerError
+  }
+
+  // 2. Delete Auth account
+  let targetUserId = customerUserId || customerData?.user_id
+
+  // If we still don't have a user_id, try to find it by email as a fallback
+  if (!targetUserId && customerData?.email) {
+    const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers()
+    if (!listError) {
+      const existingUser = users.find((u: any) => u.email?.toLowerCase() === customerData.email.toLowerCase())
+      if (existingUser) {
+        targetUserId = existingUser.id
+      }
+    }
+  }
+
+  if (targetUserId) {
+    const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId)
+    if (authError) {
+      console.error('Error deleting auth user:', authError)
+    }
+  }
+
+  revalidatePath('/dashboard/customers')
+}
 
 export default async function CustomersPage() {
   const supabase = await createClient()
@@ -14,9 +66,9 @@ export default async function CustomersPage() {
 
   const { data: customers } = await supabase
     .from('customers')
-    .select('id, name, email, phone, total_visits, last_visit_date')
+    .select('id, first_name, last_name, email, phone, total_visits, last_visit_date, user_id')
     .eq('business_id', profile?.business_id || '')
-    .order('name')
+    .order('first_name')
 
   return (
     <div className="space-y-6">
@@ -30,7 +82,7 @@ export default async function CustomersPage() {
         <div className="mt-4 sm:ml-16 sm:mt-0">
           <Link
             href="/dashboard/customers/new"
-            className="flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+            className="flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
           >
             <Plus className="-ml-0.5 mr-1.5 h-5 w-5" />
             Nuevo Cliente
@@ -56,15 +108,26 @@ export default async function CustomersPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-4">
           {customers.map((customer) => (
-            <div key={customer.id} className="col-span-1 divide-y divide-slate-200 rounded-xl bg-white shadow-sm border border-slate-200 hover:shadow-md transition-all">
+            <div key={customer.id} className="relative group col-span-1 divide-y divide-slate-200 rounded-xl bg-white shadow-sm border border-slate-200 hover:shadow-md transition-all">
+              
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DeleteCustomerButton 
+                  customerId={customer.id} 
+                  userId={customer.user_id} 
+                  deleteAction={deleteCustomerAction} 
+                />
+              </div>
+
               <div className="flex flex-col p-6">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 shrink-0">
                     <span className="text-sm font-medium text-indigo-700 uppercase">
-                      {customer.name?.charAt(0) || '?'}
+                      {customer.first_name?.charAt(0) || '?'}
                     </span>
                   </span>
-                  <h3 className="text-sm font-medium text-slate-900">{customer.name}</h3>
+                  <h3 className="text-sm font-medium text-slate-900 truncate pr-8">
+                    {customer.first_name} {customer.last_name}
+                  </h3>
                 </div>
                 <dl className="mt-4 flex flex-col gap-2">
                   {customer.email && (
@@ -87,7 +150,7 @@ export default async function CustomersPage() {
                   </div>
                   <div className="flex flex-col bg-slate-50 px-3 py-2 rounded-lg flex-1 border border-slate-100">
                     <span className="text-slate-500 font-medium">Última Visita</span>
-                    <span className="text-slate-900 font-semibold text-sm">
+                    <span className="text-slate-900 font-semibold text-sm truncate">
                       {customer.last_visit_date ?? '—'}
                     </span>
                   </div>
