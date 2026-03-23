@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Local Commerce - SaaS MVP
 
-## Getting Started
+Plataforma SaaS multi-tenant diseñada para digitalizar y automatizar pequeños negocios locales (peluquerías, barberías, clínicas, etc.).
 
-First, run the development server:
+## 🚀 Tecnologías Principales (Tech Stack)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Frontend
+* **Framework:** Next.js (App Router)
+* **Lenguaje:** TypeScript
+* **Estilos:** Tailwind CSS (Moderno, minimalista, modo premium)
+* **Iconos:** Lucide React
+
+### Backend & Autenticación
+* **Servicios en la Nube:** Supabase (PostgreSQL, Auth, Storage)
+* **Autenticación:** Server-Side Rendering (SSR) a través de `@supabase/ssr` en Next.js.
+* **Pagos (Planeado):** Stripe
+
+---
+
+## 🏗 Arquitectura y Base de Datos (Supabase)
+
+El sistema está diseñado bajo una arquitectura verdaderamente **Multi-Tenant**. Un solo backend sirve a múltiples negocios locales de forma completamente aislada e independiente.
+
+### Diagrama de Tablas Principales
+* `businesses`: Corazón del sistema. Cada registro define una empresa suscrita.
+* `profiles`: Extiende `auth.users` ligando cada usuario a un `business_id` y definiendo su `role` (Dueño/Empleado/Cliente).
+* `customers`: Directorio e historial de clientes asociados a un `business_id`.
+* `employees`: Plantilla de empleados.
+* `services` & `products`: Servicios ofrecidos y catálogo físico de productos.
+* `reservations`: Citas y agenda, entrelazando Clientes, Servicios y Empleados.
+* `inventory` & `inventory_movements`: Stock actualizado en tiempo real.
+* `tasks` & `staff_shifts`: Gestión logística interna.
+
+### Seguridad Row Level Security (RLS)
+El aislamiento de los datos ("Tenant Isolation") está garantizado forzadamente a nivel de base de datos a través de PostgreSQL RLS. 
+
+Para lograrlo, la base de datos inyecta dinámicamente el `business_id` del token JWT actual a través de la siguiente función SQL interna:
+```sql
+CREATE OR REPLACE FUNCTION get_user_business_id() RETURNS uuid STABLE AS $$
+  SELECT business_id FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql;
 ```
+Cualquier solicitud que llega a la API o mediante cliente Next.js que intente visualizar clientes o servicios, automáticamente se le aplica el filtro `USING (business_id = get_user_business_id())`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Triggers y Automatizaciones (Backend)
+* **Creación Automática:** Cuando un usuario nuevo se registra en `/register` (Autenticación), un `Trigger` en Supabase detecta la inserción en `auth.users` y automáticamente levanta una instancia de `businesses` y designa a ese usuario como dueño y administrador en `profiles`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 💻 Módulos y Funcionalidades Desarrolladas
 
-## Learn More
+1. **Autenticación (SSR):** `/login` y `/register`. El inicio de sesión y registro utilizan Server Actions y Middleware para refrescar cookies y proteger automáticamente las rutas privadas bajo `/dashboard`.
+2. **Dashboard Overview:** Widgets con KPIs esenciales: Reservas hoy, citas para mañana, ingresos, y productos con stock bajo.
+3. **Reservas (Core):** Calendario y lista con filtros de estado (Confirmada, Pendiente, No-Show). Funcionalidad de asignación entre cliente, servicio y recurso humano.
+4. **Clientes (CRM Básico):** Fichas con datos de contacto, contador de visitas (fidelización) y fecha de la última reserva.
+5. **Servicios:** Panel para establecer el tarifario, duración, y habilitar/deshabilitar disponibilidad.
+6. **Equipo y Turnos:** Control del personal activo y calendarios de turnos laborales.
+7. **Inventario:** Visualización rápida del catálogo de productos con alertas visuales de estado (Normal, Bajo, Agotado).
+8. **Configuración y Facturación:** Módulo preparatorio para la integración con suscripciones Stripe.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠 Cómo iniciar el proyecto
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sigue estos pasos para arrancar el entorno en local:
 
-## Deploy on Vercel
+1. **Instalar dependencias:**
+   ```bash
+   npm install
+   # o bien
+   yarn
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Copiar variables de entorno:**
+   Asegúrate de que exista tu archivo `.env.local` en la raíz del proyecto. Este ha sido generado y vinculado automáticamente a la nube y debe contener:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Ejecutar el servidor local de desarrollo:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Visualizar:**
+   Abre [http://localhost:3000](http://localhost:3000) con tu navegador para ver la Landing Page y navegar hacia el Dashboard.

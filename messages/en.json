@@ -1,0 +1,79 @@
+{
+  "Navigation": {
+    "home": "Home",
+    "features": "Features",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "login": "Sign In",
+    "register": "Get Started",
+    "dashboard": "Dashboard",
+    "bookDemo": "Book a Demo"
+  },
+  "Login": {
+    "title": "Sign In to My Local Commerce",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "registerHere": "Register here"
+  },
+  "Register": {
+    "title": "Create a Business Account",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "My Awesome Barbershop",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "signUp": "Sign Up",
+    "alreadyAccount": "Already have an account?",
+    "signInHere": "Sign in here"
+  },
+  "Landing": {
+    "title": "Everything your local business needs to",
+    "titleHighlight": "succeed",
+    "subtitle": "Manage reservations, staff, inventory, and customers in one beautiful, simple platform. Designed exclusively for local commerce.",
+    "features": {
+      "reservationsTitle": "Smart Reservations",
+      "reservationsDesc": "Accept bookings 24/7. Auto-reminders reduce no-shows. Easy calendar management for your staff.",
+      "loyaltyTitle": "Customer Loyalty",
+      "loyaltyDesc": "Turn first-time visitors into regulars. Track history, preferences, and reward loyalty automatically.",
+      "analyticsTitle": "Simple Analytics",
+      "analyticsDesc": "Understand your revenue, busy hours, and top services at a glance without being a data expert."
+    },
+    "footerSubtitle": "Empowering the neighborhood economy.",
+    "footerRights": "All rights reserved."
+  },
+  "Contact": {
+    "badge": "CONTACT US",
+    "title": "Do you need some",
+    "highlight": "help?",
+    "description": "Share your questions with us and a member of our team will get in touch soon. No pressure, no commitment.",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "+1 (555) 000-0000",
+    "methodLabel": "How would you prefer us to contact you?",
+    "callOption": "Call",
+    "whatsappOption": "WhatsApp",
+    "submitButton": "Contact me"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "reservations": "Reservations",
+    "customers": "Customers",
+    "services": "Services",
+    "employees": "Employees",
+    "shifts": "Shifts",
+    "inventory": "Inventory",
+    "tasks": "Tasks",
+    "settings": "Settings",
+    "businessName": "My Local Commerce",
+    "owner": "Owner",
+    "logout": "Sign Out"
+  }
+}

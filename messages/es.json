@@ -1,0 +1,79 @@
+{
+  "Navigation": {
+    "home": "Inicio",
+    "features": "Características",
+    "pricing": "Precios",
+    "contact": "Contacto",
+    "login": "Iniciar Sesión",
+    "register": "Prueba Gratis",
+    "dashboard": "Panel de Control",
+    "bookDemo": "Agendar Demo"
+  },
+  "Login": {
+    "title": "Iniciar Sesión en My Local Commerce",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Iniciar Sesión",
+    "noAccount": "¿No tienes cuenta?",
+    "registerHere": "Regístrate aquí"
+  },
+  "Register": {
+    "title": "Crear Cuenta de Negocio",
+    "fullName": "Nombre Completo",
+    "fullNamePlaceholder": "Juan Pérez",
+    "businessName": "Nombre del Negocio",
+    "businessNamePlaceholder": "Mi Barbería Increíble",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "signUp": "Registrarse",
+    "alreadyAccount": "¿Ya tienes cuenta?",
+    "signInHere": "Inicia sesión aquí"
+  },
+  "Landing": {
+    "title": "Todo lo que tu negocio local necesita para",
+    "titleHighlight": "triunfar",
+    "subtitle": "Gestiona reservas, personal, inventario y clientes en una plataforma hermosa y simple. Diseñado exclusivamente para el comercio local.",
+    "features": {
+      "reservationsTitle": "Reservas Inteligentes",
+      "reservationsDesc": "Acepta reservas 24/7. Los recordatorios automáticos reducen las ausencias. Fácil gestión del calendario para tu personal.",
+      "loyaltyTitle": "Fidelización de Clientes",
+      "loyaltyDesc": "Convierte visitantes en clientes habituales. Registra el historial, preferencias y recompensa la lealtad automáticamente.",
+      "analyticsTitle": "Analítica Simple",
+      "analyticsDesc": "Entiende tus ingresos, horas punta y mejores servicios de un vistazo sin ser un experto en datos."
+    },
+    "footerSubtitle": "Empoderando la economía del barrio.",
+    "footerRights": "Todos los derechos reservados."
+  },
+  "Contact": {
+    "badge": "CONTACTO",
+    "title": "¿Necesitas",
+    "highlight": "ayuda?",
+    "description": "Comparte tus dudas y un miembro de nuestro equipo se pondrá en contacto pronto. Sin presión, sin compromiso.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "phoneLabel": "Teléfono",
+    "phonePlaceholder": "+34 600 000 000",
+    "methodLabel": "¿Cómo prefieres que nos comuniquemos?",
+    "callOption": "Llamada",
+    "whatsappOption": "WhatsApp",
+    "submitButton": "Quiero que me contacten"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "reservations": "Reservas",
+    "customers": "Clientes",
+    "services": "Servicios",
+    "employees": "Empleados",
+    "shifts": "Turnos",
+    "inventory": "Inventario",
+    "tasks": "Tareas",
+    "settings": "Configuración",
+    "businessName": "My Local Commerce",
+    "owner": "Dueño",
+    "logout": "Cerrar Sesión"
+  }
+}
