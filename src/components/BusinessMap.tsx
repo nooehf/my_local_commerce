@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import 'leaflet/dist/leaflet.css'
 
 interface Business {
   id: string
@@ -65,6 +66,11 @@ export default function BusinessMap({ businesses }: Props) {
         const bounds = L.latLngBounds(businesses.map(b => [b.latitude, b.longitude]))
         map.fitBounds(bounds, { padding: [40, 40] })
       }
+
+      // Fix race condition with CSS loading and containers
+      setTimeout(() => {
+        map.invalidateSize()
+      }, 200)
     })
 
     return () => {
@@ -74,15 +80,10 @@ export default function BusinessMap({ businesses }: Props) {
   }, [businesses])
 
   return (
-    <>
-      {/* Leaflet CSS */}
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossOrigin=""
-      />
-      <div ref={mapRef} className="w-full h-full rounded-2xl" />
-    </>
+    <div 
+      ref={mapRef} 
+      className="w-full h-full min-h-[500px] rounded-2xl z-0" 
+      style={{ position: 'relative' }}
+    />
   )
 }

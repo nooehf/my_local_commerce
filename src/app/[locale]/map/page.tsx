@@ -72,7 +72,7 @@ export default async function MapPage() {
         </aside>
 
         {/* Map */}
-        <div className="flex-1 min-h-[500px] lg:min-h-0 rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-sm">
+        <div className="w-full lg:flex-1 h-[500px] lg:h-auto min-h-[500px] lg:min-h-[600px] rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-sm relative z-0">
           <MapWrapper businesses={validBusinesses} />
         </div>
       </div>
