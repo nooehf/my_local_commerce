@@ -47,7 +47,8 @@ export default async function NewCustomerPage({
         business_id: profile.business_id,
         first_name: firstName,
         last_name: lastName
-      }
+      },
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/confirm`
     })
 
     if (authError) {
