@@ -22,6 +22,7 @@ export default function Home() {
             <Link href="#" className="hover:text-blue-600 transition-colors">{nav("home")}</Link>
             <Link href="#features" className="hover:text-blue-600 transition-colors">{nav("features")}</Link>
             <Link href="#pricing" className="hover:text-blue-600 transition-colors">{nav("pricing")}</Link>
+            <Link href="/map" className="hover:text-blue-600 transition-colors">Negocios</Link>
             <Link href="#contact" className="hover:text-blue-600 transition-colors">{nav("contact")}</Link>
           </nav>
           
