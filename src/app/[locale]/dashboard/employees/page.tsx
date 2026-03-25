@@ -1,20 +1,26 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import { Plus, Mail, Briefcase, UsersRound, Phone } from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { Plus, Mail, UsersRound, Phone } from 'lucide-react'
 
-export default async function EmployeesPage() {
+export default async function EmployeesPage({ params }: { params: Promise<{ locale: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('business_id')
+    .select('business_id, role')
     .eq('id', user!.id)
     .single()
 
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+    const locale = (await params).locale
+    return redirect(`/${locale}/dashboard`)
+  }
+
   const { data: employees } = await supabase
     .from('employees')
-    .select('id, name, email, phone, position, status')
+    .select('id, name, first_name, last_name, email, phone, position, status, photo_url')
     .eq('business_id', profile?.business_id || '')
     .order('name')
 
@@ -41,16 +47,16 @@ export default async function EmployeesPage() {
       {!employees || employees.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl border border-dashed border-slate-300 mt-6">
           <UsersRound className="w-12 h-12 text-slate-300 mb-4" />
-          <h3 className="text-sm font-semibold text-slate-900 mb-1">Sin empleados aún</h3>
+          <h3 className="text-sm font-semibold text-slate-900 mb-1">Sin trabajadores aún</h3>
           <p className="text-sm text-slate-500 mb-6 max-w-xs">
-            Empieza añadiendo a los miembros de tu equipo para gestionar sus turnos y tareas.
+            Empieza invitando a los miembros de tu equipo para que te ayuden a gestionar el negocio.
           </p>
           <Link
             href="/dashboard/employees/new"
             className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             <Plus className="h-4 w-4" />
-            Añadir primer empleado
+            Enviar primera invitación
           </Link>
         </div>
       ) : (
@@ -58,14 +64,20 @@ export default async function EmployeesPage() {
           {employees.map((employee) => (
             <div key={employee.id} className="col-span-1 flex flex-col divide-y divide-slate-200 rounded-xl bg-white text-center shadow-sm border border-slate-200 hover:shadow-md transition-all">
               <div className="flex flex-1 flex-col p-8">
-                <div className="mx-auto h-20 w-20 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-xl font-semibold text-indigo-600 uppercase">
-                  {employee.name?.charAt(0) || '?'}
-                </div>
-                <h3 className="mt-6 text-sm font-semibold text-slate-900">{employee.name}</h3>
+                {employee.photo_url ? (
+                  <img src={employee.photo_url} alt={employee.name || ''} className="mx-auto h-20 w-20 flex-shrink-0 rounded-full object-cover ring-4 ring-indigo-50" />
+                ) : (
+                  <div className="mx-auto h-20 w-20 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-xl font-semibold text-indigo-600 uppercase ring-4 ring-indigo-50">
+                    {employee.first_name?.charAt(0) || employee.name?.charAt(0) || '?'}
+                  </div>
+                )}
+                <h3 className="mt-6 text-sm font-semibold text-slate-900">
+                  {employee.first_name || employee.name} {employee.last_name || ''}
+                </h3>
                 {employee.position && (
                   <p className="text-xs text-slate-500 mt-1">{employee.position}</p>
                 )}
-                <div className="mt-3 flex flex-col gap-1.5 items-center">
+                <div className="mt-4 flex flex-col gap-1.5 items-center">
                   {employee.email && (
                     <span className="text-xs text-slate-500 flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5 text-slate-400" />{employee.email}
@@ -77,13 +89,13 @@ export default async function EmployeesPage() {
                     </span>
                   )}
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                     employee.status === 'active'
                       ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20'
                       : 'bg-slate-100 text-slate-600'
                   }`}>
-                    {employee.status === 'active' ? 'Activo' : employee.status}
+                    {employee.status === 'active' ? 'Activo / Invitado' : employee.status}
                   </span>
                 </div>
               </div>

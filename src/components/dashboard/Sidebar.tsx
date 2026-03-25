@@ -32,7 +32,13 @@ const navigation = [
   { key: 'settings', href: '/dashboard/settings', icon: Settings },
 ]
 
-export default function Sidebar({ userName = 'Usuario' }: { userName?: string }) {
+export default function Sidebar({ 
+  userName = 'Usuario',
+  userRole = 'customer'
+}: { 
+  userName?: string,
+  userRole?: string 
+}) {
   const [isOpen, setIsOpen] = useState(true)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -103,7 +109,16 @@ export default function Sidebar({ userName = 'Usuario' }: { userName?: string })
         </div>
 
       <nav className="flex flex-1 flex-col overflow-y-auto px-2 py-6 space-y-1">
-        {navigation.map((item) => {
+        {navigation
+          .filter(item => {
+            if (userRole === 'employee') {
+              // Restricted items for workers
+              const restricted = ['employees', 'shifts', 'services', 'settings']
+              return !restricted.includes(item.key)
+            }
+            return true
+          })
+          .map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
             <Link
@@ -140,7 +155,9 @@ export default function Sidebar({ userName = 'Usuario' }: { userName?: string })
             </div>
             <div className="flex flex-col text-sm truncate">
               <span className="font-medium text-slate-900 truncate">{userName}</span>
-              <span className="text-slate-500 text-xs truncate">{t('owner')}</span>
+              <span className="text-slate-500 text-xs truncate">
+                {userRole === 'admin' || userRole === 'super_admin' ? t('owner') : t('worker')}
+              </span>
             </div>
           </div>
         )}

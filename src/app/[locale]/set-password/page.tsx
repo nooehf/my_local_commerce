@@ -37,7 +37,17 @@ export default function SetPasswordPage() {
       return
     }
 
-    router.push('/es/customer')
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
+      .single()
+
+    if (profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'employee') {
+      router.push('/es/dashboard')
+    } else {
+      router.push('/es/customer')
+    }
   }
 
   const inputClass =
@@ -54,7 +64,7 @@ export default function SetPasswordPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Configura tu cuenta</h1>
           <p className="text-slate-500 mt-2 text-sm">
-            Elige una contraseña segura para acceder a tu perfil de cliente.
+            Elige una contraseña segura para acceder a tu cuenta.
           </p>
         </div>
 

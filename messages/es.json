@@ -76,7 +76,8 @@
     "businessName": "My Local Commerce",
     "owner": "Dueño",
     "logout": "Cerrar Sesión",
-    "map": "Negocios"
+    "map": "Negocios",
+    "worker": "Trabajador"
   },
   "Map": {
     "title": "Negocios locales",

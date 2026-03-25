@@ -11,11 +11,19 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario'
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, role')
+    .eq('id', user?.id || '')
+    .single()
+
+  const userName = profile?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario'
+  const userRole = profile?.role || 'customer'
 
   return (
     <div className="flex h-screen w-full bg-slate-50/50">
-      <Sidebar userName={userName} />
+      <Sidebar userName={userName} userRole={userRole} />
       <div className="flex flex-1 flex-col overflow-hidden w-full min-w-0">
         <header className="flex h-20 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8">
           <div className="flex items-center gap-2 lg:gap-4">

@@ -1,44 +1,47 @@
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2, Camera } from 'lucide-react'
+import { inviteWorkerAction } from '../actions'
+import { useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
-export default async function NewEmployeePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>
-}) {
-  const { error } = await searchParams
+export default function NewEmployeePage() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const locale = useLocale()
+  const router = useRouter()
 
-  const createEmployee = async (formData: FormData) => {
-    'use server'
-    const headersList = await headers()
-    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 200 * 1024) {
+        alert('La foto debe ser menor a 200KB')
+        e.target.value = ''
+        return
+      }
+      const reader = new FileReader()
+      reader.onloadend = () => setPhotoPreview(reader.result as string)
+      reader.readAsDataURL(file)
+    }
+  }
 
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect(`/${currentLocale}/login`)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('business_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.business_id) return redirect(`/${currentLocale}/dashboard/employees`)
-
-    const { error } = await supabase.from('employees').insert({
-      business_id: profile.business_id,
-      name: formData.get('name') as string,
-      email: formData.get('email') as string || null,
-      phone: formData.get('phone') as string || null,
-      position: formData.get('position') as string || null,
-      status: 'active',
-    })
-
-    if (error) return redirect(`/${currentLocale}/dashboard/employees/new?error=${encodeURIComponent(error.message)}`)
-    redirect(`/${currentLocale}/dashboard/employees`)
+    const formData = new FormData(e.currentTarget)
+    try {
+      await inviteWorkerAction(formData, locale)
+      router.push(`/${locale}/dashboard/employees`)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -48,50 +51,75 @@ export default async function NewEmployeePage({
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Nuevo Empleado</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Añade un miembro nuevo a tu equipo</p>
+          <h1 className="text-2xl font-bold text-slate-900">Invitar Trabajador</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Se enviará una invitación por email</p>
         </div>
       </div>
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-          Error: {decodeURIComponent(error)}
+          {error}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
-        <form action={createEmployee} className="space-y-6">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          {/* Photo Upload Section */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-8 h-8 text-slate-400" />
+                )}
+              </div>
+              <input 
+                type="file" 
+                name="photo" 
+                accept="image/*" 
+                onChange={handlePhotoChange}
+                className="absolute inset-0 opacity-0 cursor-pointer" 
+              />
+              <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow-md border border-slate-200 text-slate-600 group-hover:text-indigo-600 transition-colors">
+                <Camera className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">Foto de perfil (máx. 200KB)</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Nombre Completo <span className="text-red-500">*</span>
+                Nombre <span className="text-red-500">*</span>
               </label>
               <input
-                name="name"
+                name="first_name"
                 type="text"
                 required
-                placeholder="Juan García"
+                placeholder="Ej. Juan"
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Cargo / Puesto
+                Apellidos
               </label>
               <input
-                name="position"
+                name="last_name"
                 type="text"
-                placeholder="Estilista, Recepcionista..."
+                placeholder="Ej. García"
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Email
+                Email / Invitación <span className="text-red-500">*</span>
               </label>
               <input
                 name="email"
                 type="email"
+                required
                 placeholder="juan@empresa.com"
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -107,6 +135,17 @@ export default async function NewEmployeePage({
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Cargo / Puesto
+              </label>
+              <input
+                name="position"
+                type="text"
+                placeholder="Ej. Estilista, Recepcionista..."
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -118,9 +157,17 @@ export default async function NewEmployeePage({
             </Link>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
+              disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >
-              Añadir Empleado
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Invitando...
+                </>
+              ) : (
+                'Enviar Invitación'
+              )}
             </button>
           </div>
         </form>

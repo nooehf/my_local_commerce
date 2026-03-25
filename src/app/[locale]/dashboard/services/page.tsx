@@ -1,16 +1,22 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Plus, Briefcase } from 'lucide-react'
 
-export default async function ServicesPage() {
+export default async function ServicesPage({ params }: { params: Promise<{ locale: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('business_id')
+    .select('business_id, role')
     .eq('id', user!.id)
     .single()
+
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+    const locale = (await params).locale
+    return redirect(`/${locale}/dashboard`)
+  }
 
   const { data: services } = await supabase
     .from('services')

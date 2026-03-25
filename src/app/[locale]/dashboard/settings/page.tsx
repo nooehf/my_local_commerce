@@ -3,16 +3,21 @@ import { redirect } from 'next/navigation'
 import BusinessDataForm from '@/components/dashboard/BusinessDataForm'
 import { CreditCard, Store } from 'lucide-react'
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('business_id')
+    .select('business_id, role')
     .eq('id', user.id)
     .single()
+
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+    const locale = (await params).locale
+    return redirect(`/${locale}/dashboard`)
+  }
 
   const { data: business } = await supabase
     .from('businesses')

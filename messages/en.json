@@ -76,7 +76,8 @@
     "businessName": "My Local Commerce",
     "owner": "Owner",
     "logout": "Sign Out",
-    "map": "Businesses"
+    "map": "Businesses",
+    "worker": "Worker"
   },
   "Map": {
     "title": "Local Businesses",
