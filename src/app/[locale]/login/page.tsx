@@ -30,7 +30,8 @@ async function signIn(formData: FormData) {
 
   if (error) {
     console.error(`[AUTH] Error for ${email}:`, error.message)
-    return redirect(`/${currentLocale}/login?message=${encodeURIComponent(error.message)}`)
+    const debugInfo = email ? ` (Recibido: ${email.substring(0,2)}...${email.length} caracteres)` : ' (Email vacío)'
+    return redirect(`/${currentLocale}/login?message=${encodeURIComponent(error.message + debugInfo)}`)
   }
 
   return redirect(`/${currentLocale}/dashboard`)
