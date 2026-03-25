@@ -6,7 +6,7 @@ import { Plus, Mail, Phone, Users } from 'lucide-react'
 import { revalidatePath } from 'next/cache'
 import DeleteCustomerButton from '@/components/dashboard/DeleteCustomerButton'
 
-async function deleteCustomerAction(formData: FormData) {
+async function deleteCustomerAction(state: any, formData: FormData) {
   'use server'
   const customerId = formData.get('id') as string
   const customerUserId = formData.get('user_id') as string
@@ -16,9 +16,17 @@ async function deleteCustomerAction(formData: FormData) {
 
   try {
     const adminClient = createAdminClient()
-    console.log('Admin client initialized')
+    
+    // 1. Fetch data BEFORE deletion
+    const { data: customerData } = await adminClient
+      .from('customers')
+      .select('email, user_id')
+      .eq('id', customerId)
+      .single()
+      
+    console.log('Fetched customer data for deletion:', customerData)
 
-    // 1. Delete CRM record
+    // 2. Delete CRM record
     console.log('Attempting DB delete...')
     const { error: customerError } = await adminClient
       .from('customers')
@@ -27,17 +35,11 @@ async function deleteCustomerAction(formData: FormData) {
 
     if (customerError) {
       console.error('DB Delete Error:', customerError)
-      return
+      return { error: 'No se pudo eliminar el registro de la base de datos' }
     }
     console.log('DB Delete Success')
 
-    // 2. Delete Auth account
-    const { data: customerData } = await adminClient
-      .from('customers')
-      .select('email, user_id')
-      .eq('id', customerId)
-      .single()
-
+    // 3. Delete Auth account
     let targetUserId = customerUserId || customerData?.user_id
 
     if (!targetUserId && customerData?.email) {
@@ -53,16 +55,16 @@ async function deleteCustomerAction(formData: FormData) {
       const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId)
       if (authError) {
         console.error('Auth Delete Error (continuing):', authError)
-      } else {
-        console.log('Auth Delete Success')
       }
     }
 
     console.log('Revalidating paths...')
-    revalidatePath('/[locale]/dashboard/customers', 'page')
+    revalidatePath('/[locale]/dashboard/customers', 'layout')
     console.log('--- DELETE CUSTOMER END ---')
+    return { success: true }
   } catch (err) {
     console.error('CRITICAL ACTION ERROR:', err)
+    return { error: 'Ocurrió un error inesperado al borrar' }
   }
 }
 

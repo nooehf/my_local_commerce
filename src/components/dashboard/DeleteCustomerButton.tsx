@@ -1,39 +1,51 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Trash2, Loader2 } from 'lucide-react'
+import { useFormStatus } from 'react-dom'
+import { useActionState, useEffect } from 'react'
 
 interface DeleteCustomerButtonProps {
   customerId: string
   userId: string | null
-  deleteAction: (formData: FormData) => Promise<void>
+  deleteAction: (state: any, formData: FormData) => Promise<{ error?: string; success?: boolean }>
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button 
+      type="submit" 
+      disabled={pending}
+      className={`p-1.5 rounded-lg transition-all duration-200 ${
+        pending ? 'bg-slate-50 text-slate-400 cursor-not-allowed scale-95' : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:scale-110 active:scale-90'
+      }`}
+      title="Eliminar Cliente"
+    >
+      {pending ? <Loader2 className="w-4 h-4 animate-spin text-indigo-500" /> : <Trash2 className="w-4 h-4" />}
+    </button>
+  )
 }
 
 export default function DeleteCustomerButton({ customerId, userId, deleteAction }: DeleteCustomerButtonProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [state, formAction] = useActionState(deleteAction, null)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este cliente? Se borrarán todos sus datos y reservas.')) {
-      e.preventDefault()
-      return
+  useEffect(() => {
+    if (state?.error) {
+      alert(state.error)
     }
-    setIsDeleting(true)
+  }, [state])
+
+  const clientAction = (formData: FormData) => {
+    if (confirm('¿Estás seguro de que quieres eliminar este cliente? Se borrarán todos sus datos y reservas.')) {
+      formAction(formData)
+    }
   }
 
   return (
-    <form action={deleteAction} onSubmit={handleSubmit}>
+    <form action={clientAction} className="inline-flex items-center">
       <input type="hidden" name="id" value={customerId} />
       <input type="hidden" name="user_id" value={userId || ''} />
-      <button 
-        type="submit" 
-        disabled={isDeleting}
-        className={`p-1.5 rounded-lg transition-colors ${
-          isDeleting ? 'text-slate-300' : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
-        }`}
-        title="Eliminar Cliente"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+      <SubmitButton />
     </form>
   )
 }
