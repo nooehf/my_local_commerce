@@ -11,8 +11,7 @@ async function deleteCustomerAction(state: any, formData: FormData) {
   const customerId = formData.get('id') as string
   const customerUserId = formData.get('user_id') as string
   
-  console.log('--- DELETE CUSTOMER START ---')
-  console.log('ID:', customerId, 'UserID:', customerUserId)
+  console.log('--- DELETE CUSTOMER START (ADMIN ONLY) ---')
 
   try {
     const adminClient = createAdminClient()
@@ -24,10 +23,8 @@ async function deleteCustomerAction(state: any, formData: FormData) {
       .eq('id', customerId)
       .single()
       
-    console.log('Fetched customer data for deletion:', customerData)
-
-    // 2. Delete CRM record
-    console.log('Attempting DB delete...')
+    // 2. Delete CRM record using adminClient (bypasses RLS)
+    console.log('Attempting DB delete with admin client...')
     const { error: customerError } = await adminClient
       .from('customers')
       .delete()
@@ -35,36 +32,27 @@ async function deleteCustomerAction(state: any, formData: FormData) {
 
     if (customerError) {
       console.error('DB Delete Error:', customerError)
-      return { error: 'No se pudo eliminar el registro de la base de datos' }
+      return { error: `Base de Datos: ${customerError.message} (Código: ${customerError.code})` }
     }
     console.log('DB Delete Success')
 
     // 3. Delete Auth account
     let targetUserId = customerUserId || customerData?.user_id
-
-    if (!targetUserId && customerData?.email) {
-      const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers()
-      if (!listError) {
-        const existingUser = users.find((u: any) => u.email?.toLowerCase() === customerData.email.toLowerCase())
-        if (existingUser) targetUserId = existingUser.id
-      }
-    }
-
     if (targetUserId) {
       console.log('Attempting Auth delete for:', targetUserId)
       const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId)
       if (authError) {
-        console.error('Auth Delete Error (continuing):', authError)
+        console.error('Auth Delete Error:', authError)
+        return { error: `Registro borrado, pero error en Email: ${authError.message}` }
       }
+      console.log('Auth Delete Success')
     }
 
-    console.log('Revalidating paths...')
     revalidatePath('/[locale]/dashboard/customers', 'layout')
-    console.log('--- DELETE CUSTOMER END ---')
     return { success: true }
-  } catch (err) {
+  } catch (err: any) {
     console.error('CRITICAL ACTION ERROR:', err)
-    return { error: 'Ocurrió un error inesperado al borrar' }
+    return { error: `Error de servidor: ${err.message || 'Error desconocido'}` }
   }
 }
 
