@@ -11,48 +11,59 @@ async function deleteCustomerAction(formData: FormData) {
   const customerId = formData.get('id') as string
   const customerUserId = formData.get('user_id') as string
   
-  const adminClient = createAdminClient()
+  console.log('--- DELETE CUSTOMER START ---')
+  console.log('ID:', customerId, 'UserID:', customerUserId)
 
-  // Pre-fetch customer data to get email and user_id if needed
-  const { data: customerData } = await adminClient
-    .from('customers')
-    .select('email, user_id')
-    .eq('id', customerId)
-    .single()
+  try {
+    const adminClient = createAdminClient()
+    console.log('Admin client initialized')
 
-  // 1. Delete CRM record (this will trigger cascading delete on reservations)
-  const { error: customerError } = await adminClient
-    .from('customers')
-    .delete()
-    .eq('id', customerId)
+    // 1. Delete CRM record
+    console.log('Attempting DB delete...')
+    const { error: customerError } = await adminClient
+      .from('customers')
+      .delete()
+      .eq('id', customerId)
 
-  if (customerError) {
-    console.error('Error deleting customer record:', customerError)
-    throw customerError
-  }
+    if (customerError) {
+      console.error('DB Delete Error:', customerError)
+      return
+    }
+    console.log('DB Delete Success')
 
-  // 2. Delete Auth account
-  let targetUserId = customerUserId || customerData?.user_id
+    // 2. Delete Auth account
+    const { data: customerData } = await adminClient
+      .from('customers')
+      .select('email, user_id')
+      .eq('id', customerId)
+      .single()
 
-  // If we still don't have a user_id, try to find it by email as a fallback
-  if (!targetUserId && customerData?.email) {
-    const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers()
-    if (!listError) {
-      const existingUser = users.find((u: any) => u.email?.toLowerCase() === customerData.email.toLowerCase())
-      if (existingUser) {
-        targetUserId = existingUser.id
+    let targetUserId = customerUserId || customerData?.user_id
+
+    if (!targetUserId && customerData?.email) {
+      const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers()
+      if (!listError) {
+        const existingUser = users.find((u: any) => u.email?.toLowerCase() === customerData.email.toLowerCase())
+        if (existingUser) targetUserId = existingUser.id
       }
     }
-  }
 
-  if (targetUserId) {
-    const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId)
-    if (authError) {
-      console.error('Error deleting auth user:', authError)
+    if (targetUserId) {
+      console.log('Attempting Auth delete for:', targetUserId)
+      const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId)
+      if (authError) {
+        console.error('Auth Delete Error (continuing):', authError)
+      } else {
+        console.log('Auth Delete Success')
+      }
     }
-  }
 
-  revalidatePath('/dashboard/customers')
+    console.log('Revalidating paths...')
+    revalidatePath('/[locale]/dashboard/customers', 'page')
+    console.log('--- DELETE CUSTOMER END ---')
+  } catch (err) {
+    console.error('CRITICAL ACTION ERROR:', err)
+  }
 }
 
 export default async function CustomersPage() {
