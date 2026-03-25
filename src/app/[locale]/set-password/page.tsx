@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { KeyRound, Eye, EyeOff, CheckCircle2, ShieldCheck } from 'lucide-react'
 
 export default function SetPasswordPage() {
   const router = useRouter()
+  const { locale } = useParams() as { locale: string }
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -18,12 +19,12 @@ export default function SetPasswordPage() {
     setError(null)
 
     if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.')
+      setError(locale === 'es' ? 'La contraseña debe tener al menos 8 caracteres.' : 'Password must be at least 8 characters.')
       return
     }
 
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.')
+      setError(locale === 'es' ? 'Las contraseñas no coinciden.' : 'Passwords do not match.')
       return
     }
 
@@ -49,9 +50,9 @@ export default function SetPasswordPage() {
     }
 
     if (profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'employee') {
-      router.push('/es/dashboard')
+      router.push(`/${locale}/dashboard`)
     } else {
-      router.push('/es/customer')
+      router.push(`/${locale}/customer`)
     }
   }
 
@@ -140,7 +141,7 @@ export default function SetPasswordPage() {
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none mt-2"
             >
               <CheckCircle2 className="w-4 h-4" />
-              {loading ? 'Guardando...' : 'Guardar contraseña y acceder'}
+              {loading ? (locale === 'es' ? 'Guardando...' : 'Saving...') : (locale === 'es' ? 'Guardar contraseña y acceder' : 'Save password and access')}
             </button>
           </form>
         </div>

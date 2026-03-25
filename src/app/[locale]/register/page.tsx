@@ -6,10 +6,13 @@ import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 
 export default async function Register({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>
   searchParams: Promise<{ message: string }>
 }) {
+  const { locale } = await params
   const { message } = await searchParams
   const t = await getTranslations('Register')
 
@@ -28,24 +31,26 @@ export default async function Register({
       email,
       password,
       options: {
-        emailRedirectTo: `${origin}/auth/callback`,
+        emailRedirectTo: `${origin}/${locale}/auth/callback`,
         data: {
           full_name: fullName,
           business_name: businessName,
+          locale,
         }
       },
     })
 
     if (error) {
-      return redirect(`/register?message=${error.message}`)
+      return redirect(`/${locale}/register?message=${error.message}`)
     }
 
-    // Forzar el inicio de sesión manual cerrando la sesión automática que Supabase crea al registrarse
-    if (data.session || data.user) {
-      await supabase.auth.signOut()
-    }
+    // No llamar a signOut() aquí, ya que borraría la cookie del verificador PKCE necesaria para el email
 
-    return redirect('/login?message=Cuenta creada con éxito. Revisa tu bandeja de entrada (email) para verificar tu cuenta antes de iniciar sesión.')
+    const successMessage = locale === 'es' 
+      ? 'Cuenta creada con éxito. Revisa tu bandeja de entrada (email) para verificar tu cuenta antes de iniciar sesión.'
+      : 'Account created successfully. Please check your inbox to verify your account before logging in.'
+
+    return redirect(`/${locale}/login?message=${successMessage}`)
   }
 
   return (
@@ -94,9 +99,15 @@ export default async function Register({
             {t('signUp')}
           </button>
           {message && (
-            <p className="mt-4 p-4 bg-red-100 text-red-600 text-center text-sm border-l-4 border-red-500 rounded">
+            <div 
+              className={`mt-4 p-4 text-center text-sm border-l-4 rounded ${
+                message.toLowerCase().includes('error') || message.toLowerCase().includes('already') || message.toLowerCase().includes('invalid')
+                  ? 'bg-red-50 text-red-700 border-red-500' 
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-500'
+              }`}
+            >
               {message}
-            </p>
+            </div>
           )}
           <div className="mt-4 text-center text-sm text-slate-600">
             {t('alreadyAccount')}{' '}

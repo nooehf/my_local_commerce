@@ -39,9 +39,10 @@ export async function inviteWorkerAction(formData: FormData, locale: string) {
       full_name: `${firstName} ${lastName}`.trim(),
       business_id: adminProfile.business_id,
       first_name: firstName,
-      last_name: lastName
+      last_name: lastName,
+      locale
     },
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/confirm`
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${locale}/auth/callback?next=/${locale}/set-password`
   })
 
   if (inviteError) throw new Error(`Error al invitar: ${inviteError.message}`)

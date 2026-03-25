@@ -50,9 +50,10 @@ export default async function NewCustomerPage({
         role: 'customer',
         business_id: profile.business_id,
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        locale: currentLocale
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/confirm`
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${currentLocale}/auth/callback?next=/${currentLocale}/set-password`
     })
 
     if (authError) {
@@ -77,7 +78,8 @@ export default async function NewCustomerPage({
               role: 'customer',
               business_id: profile.business_id,
               first_name: firstName,
-              last_name: lastName
+              last_name: lastName,
+              locale: currentLocale
             }
           })
         } else {

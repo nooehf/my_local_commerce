@@ -17,8 +17,17 @@
     "password": "Contraseña",
     "passwordPlaceholder": "••••••••",
     "signIn": "Iniciar Sesión",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
     "noAccount": "¿No tienes cuenta?",
     "registerHere": "Regístrate aquí"
+  },
+  "ForgotPassword": {
+    "title": "Recuperar Contraseña",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "submit": "Enviar enlace de recuperación",
+    "backToLogin": "Volver al inicio de sesión",
+    "successMessage": "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña pronto."
   },
   "Register": {
     "title": "Crear Cuenta de Negocio",
@@ -92,5 +101,18 @@
     "noResults": "Sin resultados",
     "tryAdjusting": "Prueba ajustando tu búsqueda.",
     "unnamedBusiness": "Negocio sin nombre"
+  },
+  "AuthError": {
+    "title": "Error de autenticación",
+    "description": "No hemos podido validar el código de enlace. Esto suele ocurrir si el enlace ha caducado, ya ha sido utilizado o si estás usando un navegador diferente al que iniciaste el proceso.",
+    "whatToDo": "¿Qué puedes hacer?",
+    "step1": "Vuelve a solicitar el enlace de confirmación.",
+    "step2": "Asegúrate de usar el mismo navegador (no cambies entre móvil y ordenador).",
+    "step3": "No hagas clic dos veces en el mismo enlace.",
+    "backHome": "Volver al inicio"
+  },
+  "Customers": {
+    "status_invited": "Invitado",
+    "status_active": "Activo"
   }
 }

@@ -17,8 +17,17 @@
     "password": "Password",
     "passwordPlaceholder": "••••••••",
     "signIn": "Sign In",
+    "forgotPassword": "Forgot your password?",
     "noAccount": "Don't have an account?",
     "registerHere": "Register here"
+  },
+  "ForgotPassword": {
+    "title": "Recover Password",
+    "email": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send recovery link",
+    "backToLogin": "Back to login",
+    "successMessage": "If the email is registered, you will receive a reset link shortly."
   },
   "Register": {
     "title": "Create a Business Account",
@@ -92,5 +101,18 @@
     "noResults": "No results",
     "tryAdjusting": "Try adjusting your search.",
     "unnamedBusiness": "Unnamed business"
+  },
+  "AuthError": {
+    "title": "Authentication Error",
+    "description": "We couldn't validate the link code. This usually happens if the link has expired, has already been used, or if you are using a different browser than the one you started the process in.",
+    "whatToDo": "What can you do?",
+    "step1": "Request the confirmation link again.",
+    "step2": "Make sure to use the same browser (don't switch between mobile and computer).",
+    "step3": "Do not click the same link twice.",
+    "backHome": "Back to home"
+  },
+  "Customers": {
+    "status_invited": "Invited",
+    "status_active": "Active"
   }
 }
