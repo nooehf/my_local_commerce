@@ -266,13 +266,13 @@ export default function BusinessDataForm({ business }: Props) {
         </div>
         {latitude && longitude && (
           <div className="mt-4">
-            <p className="mb-2 text-xs text-emerald-600 font-medium flex items-center gap-1.5">
+            <div className="mb-2 text-xs text-emerald-600 font-medium flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <div>
                 Ubicación confirmada.
                 <span className="text-slate-500 ml-1 font-normal block sm:inline">Arrastra el marcador azul si necesitas ajustar el punto exacto al número de tu calle.</span>
               </div>
-            </p>
+            </div>
             <DraggableMapWrapper
               latitude={latitude}
               longitude={longitude}

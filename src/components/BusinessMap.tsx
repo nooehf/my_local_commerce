@@ -40,6 +40,10 @@ export default function BusinessMap({ businesses }: Props) {
           ? [businesses[0].latitude, businesses[0].longitude]
           : [40.416775, -3.70379] // Madrid default
 
+      if ((mapRef.current as any)._leaflet_id) {
+        return;
+      }
+
       const map = L.map(mapRef.current!).setView(center, businesses.length > 1 ? 6 : 13)
       mapInstanceRef.current = map
 

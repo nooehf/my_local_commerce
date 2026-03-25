@@ -27,6 +27,10 @@ export default function DraggableMap({ latitude, longitude, onChange }: Props) {
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
 
+      if ((mapRef.current as any)._leaflet_id) {
+        return;
+      }
+
       const map = L.map(mapRef.current!).setView([latitude, longitude], 17)
       mapInstanceRef.current = map
 
