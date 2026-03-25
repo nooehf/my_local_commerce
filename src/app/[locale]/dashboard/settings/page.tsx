@@ -28,7 +28,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Business Data */}
-      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200">
         <div className="border-b border-slate-100 px-6 py-5">
           <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
             <Store className="w-5 h-5 text-indigo-500" />

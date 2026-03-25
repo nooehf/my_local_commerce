@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Store, MapPin, FileText, Image as ImageIcon, CheckCircle2, X, Search } from 'lucide-react'
+import { DraggableMapWrapper } from './DraggableMapWrapper'
 
 interface BusinessData {
   id: string
@@ -32,6 +33,7 @@ export default function BusinessDataForm({ business }: Props) {
   const [name, setName] = useState(business.name || '')
   const [description, setDescription] = useState(business.description || '')
   const [address, setAddress] = useState(business.address || '')
+  const [addressExtras, setAddressExtras] = useState('')
   const [latitude, setLatitude] = useState(business.latitude)
   const [longitude, setLongitude] = useState(business.longitude)
   const [photoUrl, setPhotoUrl] = useState(business.photo_url || '')
@@ -119,7 +121,12 @@ export default function BusinessDataForm({ business }: Props) {
       .update({
         name: name.trim(),
         description: description.trim() || null,
-        address: address.trim(),
+        address: (() => {
+          if (!addressExtras.trim()) return address.trim()
+          const parts = address.split(',').map(p => p.trim())
+          if (parts.length > 1) return `${parts[0]} ${addressExtras.trim()}, ${parts.slice(1).join(', ')}`
+          return `${address.trim()} ${addressExtras.trim()}`
+        })(),
         latitude,
         longitude,
         photo_url: finalPhotoUrl || null,
@@ -229,13 +236,21 @@ export default function BusinessDataForm({ business }: Props) {
           <input
             type="text"
             value={address}
-            onChange={e => { setAddress(e.target.value); setLatitude(null); setLongitude(null); searchLocation(e.target.value) }}
+            onChange={e => { 
+              const val = e.target.value
+              setAddress(val)
+              if (val.trim() === '') {
+                setLatitude(null)
+                setLongitude(null)
+              }
+              searchLocation(val) 
+            }}
             placeholder="Busca una dirección o ciudad..."
             className={`${inputClass} pl-11`}
             autoComplete="off"
           />
           {suggestions.length > 0 && (
-            <ul className="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl ring-1 ring-slate-200 overflow-hidden text-sm">
+            <ul className="absolute z-50 mt-1 w-full max-h-60 bg-white rounded-xl shadow-xl ring-1 ring-slate-200 overflow-y-auto text-sm">
               {suggestions.map(s => (
                 <li
                   key={s.place_id}
@@ -250,9 +265,49 @@ export default function BusinessDataForm({ business }: Props) {
           )}
         </div>
         {latitude && longitude && (
-          <p className="mt-1.5 text-xs text-emerald-600 font-medium flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Ubicación confirmada: {latitude.toFixed(5)}, {longitude.toFixed(5)}
+          <div className="mt-4">
+            <p className="mb-2 text-xs text-emerald-600 font-medium flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <div>
+                Ubicación confirmada. 
+                <span className="text-slate-500 ml-1 font-normal block sm:inline">Arrastra el marcador azul si necesitas ajustar el punto exacto al número de tu calle.</span>
+              </div>
+            </p>
+            <DraggableMapWrapper 
+              latitude={latitude} 
+              longitude={longitude} 
+              onChange={(lat, lng) => {
+                setLatitude(lat);
+                setLongitude(lng);
+              }} 
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Manual Street Number/Portal */}
+      <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+          Detalles de la calle (Número, Piso, Puerta)
+        </label>
+        <input
+          type="text"
+          value={addressExtras}
+          onChange={e => setAddressExtras(e.target.value)}
+          placeholder="Ej: Nº 17, 1B"
+          className={inputClass}
+        />
+        {addressExtras.trim() && (
+          <p className="mt-1.5 text-xs text-slate-500 font-medium bg-slate-100 p-2 rounded-lg">
+            Dirección final: <span className="text-slate-700">
+              {(() => {
+                const parts = address.split(',').map(p => p.trim())
+                if (parts.length > 1 && addressExtras.trim()) {
+                  return `${parts[0]} ${addressExtras.trim()}, ${parts.slice(1).join(', ')}`
+                }
+                return `${address.trim()} ${addressExtras.trim()}`
+              })()}
+            </span>
           </p>
         )}
       </div>
