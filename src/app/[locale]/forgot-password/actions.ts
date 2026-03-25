@@ -12,9 +12,12 @@ export async function resetPasswordAction(formData: FormData, locale: string) {
   const host = headersList.get('host')
   const protocol = host?.includes('localhost') ? 'http' : 'https'
   const origin = `${protocol}://${host}`
+  
+  // Use fixed site URL for production if set, otherwise dynamic origin for tests
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/${locale}/auth/confirm?type=recovery`,
+    redirectTo: `${siteUrl}/${locale}/auth/confirm?type=recovery`,
   })
 
   if (error) return { error: error.message }
