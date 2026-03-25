@@ -62,6 +62,13 @@ export default function MobileMenu() {
             >
               {nav('contact')}
             </Link>
+            <Link
+              href="/map"
+              className="text-slate-600 hover:text-blue-600 transition-colors font-medium py-3 px-4 hover:bg-slate-50 rounded-lg"
+              onClick={closeMenu}
+            >
+              {nav('businesses')}
+            </Link>
 
             {/* Separador */}
             <div className="my-4 border-t border-slate-200" />

@@ -3,6 +3,7 @@
     "home": "Inicio",
     "features": "Características",
     "pricing": "Precios",
+    "businesses": "Negocios",
     "contact": "Contacto",
     "login": "Iniciar Sesión",
     "register": "Prueba Gratis",
@@ -74,6 +75,21 @@
     "settings": "Configuración",
     "businessName": "My Local Commerce",
     "owner": "Dueño",
-    "logout": "Cerrar Sesión"
+    "logout": "Cerrar Sesión",
+    "map": "Negocios"
+  },
+  "Map": {
+    "title": "Negocios locales",
+    "subtitle": "Descubre los negocios registrados en nuestra plataforma y encuéntralos en el mapa.",
+    "searchPlaceholder": "Buscar por nombre, calle o servicio...",
+    "businessesFound": "negocios encontrados",
+    "businessFound": "negocio encontrado",
+    "businessesNearby": "negocios cerca",
+    "businessNearby": "negocio cerca",
+    "showList": "Ver listado de negocios",
+    "hide": "Ocultar",
+    "noResults": "Sin resultados",
+    "tryAdjusting": "Prueba ajustando tu búsqueda.",
+    "unnamedBusiness": "Negocio sin nombre"
   }
 }

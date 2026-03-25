@@ -1,10 +1,13 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { MapPin } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 import MapInteractive from '@/components/map/MapInteractive'
+import PublicNavbar from '@/components/PublicNavbar'
 
 export default async function MapPage() {
   const supabase = createAdminClient()
+  const t = await getTranslations('Map')
 
   const { data: businesses } = await supabase
     .from('businesses')
@@ -25,16 +28,17 @@ export default async function MapPage() {
   }[]
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+      <PublicNavbar />
 
       {/* Header */}
       <div className="bg-white border-b border-slate-100 px-6 py-8 text-center pt-10">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 mb-4 shadow-lg shadow-indigo-200">
           <MapPin className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Negocios locales</h1>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('title')}</h1>
         <p className="text-slate-500 mt-3 text-sm max-w-md mx-auto leading-relaxed">
-          Descubre los negocios registrados en nuestra plataforma y encuéntralos en el mapa.
+          {t('subtitle')}
         </p>
       </div>
 

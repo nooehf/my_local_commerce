@@ -3,6 +3,7 @@
     "home": "Home",
     "features": "Features",
     "pricing": "Pricing",
+    "businesses": "Businesses",
     "contact": "Contact",
     "login": "Sign In",
     "register": "Get Started",
@@ -74,6 +75,21 @@
     "settings": "Settings",
     "businessName": "My Local Commerce",
     "owner": "Owner",
-    "logout": "Sign Out"
+    "logout": "Sign Out",
+    "map": "Businesses"
+  },
+  "Map": {
+    "title": "Local Businesses",
+    "subtitle": "Discover the businesses registered on our platform and find them on the map.",
+    "searchPlaceholder": "Search by name, street, or service...",
+    "businessesFound": "businesses found",
+    "businessFound": "business found",
+    "businessesNearby": "businesses nearby",
+    "businessNearby": "business nearby",
+    "showList": "View business list",
+    "hide": "Hide",
+    "noResults": "No results",
+    "tryAdjusting": "Try adjusting your search.",
+    "unnamedBusiness": "Unnamed business"
   }
 }
