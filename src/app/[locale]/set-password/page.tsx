@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
 import { KeyRound, Eye, EyeOff, CheckCircle2, ShieldCheck } from 'lucide-react'
@@ -13,6 +13,22 @@ export default function SetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setUserEmail(user.email || null)
+    }
+    checkUser()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push(`/${locale}/login`)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +45,6 @@ export default function SetPasswordPage() {
     }
 
     setLoading(true)
-    const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password })
     setLoading(false)
 
@@ -69,8 +84,21 @@ export default function SetPasswordPage() {
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Configura tu cuenta</h1>
-          <p className="text-slate-500 mt-2 text-sm">
-            Elige una contraseña segura para acceder a tu cuenta.
+          <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+            {userEmail ? (
+              <>
+                Estás configurando la cuenta para:<br/>
+                <span className="font-bold text-indigo-600">{userEmail}</span>
+                <button 
+                  onClick={handleLogout}
+                  className="block mx-auto mt-2 text-xs text-rose-500 hover:text-rose-700 font-semibold underline underline-offset-4 decoration-rose-200"
+                >
+                  ¿No eres tú? Cerrar sesión antes
+                </button>
+              </>
+            ) : (
+              'Elige una contraseña segura para acceder a tu cuenta.'
+            )}
           </p>
         </div>
 

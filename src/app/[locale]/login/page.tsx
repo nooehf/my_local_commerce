@@ -16,10 +16,6 @@ async function signIn(formData: FormData) {
   const password = (formData.get('password') as string) || ''
   const supabase = await createClient()
 
-  // Diagnostic log for Netlify (visible in Functions logs)
-  console.log(`[AUTH] Login attempt for: ${email.substring(0, 3)}... (Total length: ${email.length})`)
-  if (email.length === 0) console.warn('[AUTH] WARNING: Email is EMPTY in server action!')
-
   const headersList = await headers()
   const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
 
@@ -30,8 +26,7 @@ async function signIn(formData: FormData) {
 
   if (error) {
     console.error(`[AUTH] Error for ${email}:`, error.message)
-    const debugInfo = email ? ` (E: ${email.substring(0,2)}...${email.length} ch, P: ${password.length} ch)` : ' (Datos vacíos)'
-    return redirect(`/${currentLocale}/login?message=${encodeURIComponent(error.message + debugInfo)}`)
+    return redirect(`/${currentLocale}/login?message=${encodeURIComponent(error.message)}`)
   }
 
   return redirect(`/${currentLocale}/dashboard`)

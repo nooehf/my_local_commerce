@@ -1,5 +1,6 @@
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ locale: string }> }) {
@@ -16,12 +17,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   redirectTo.searchParams.delete('next')
 
   if (code) {
+    // SURGICAL LOGOUT: Manually clear ONLY the session cookie for this project.
+    // This removes the Admin session but PRESERVES the PKCE verifier cookie
+    // (needed for exchangeCodeForSession).
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (supabaseUrl) {
+      const projectRef = supabaseUrl.split('.')[0].split('//')[1]
+      const sessionCookieName = `sb-${projectRef}-auth-token`
+      const cookieStore = await cookies()
+      cookieStore.delete(sessionCookieName)
+    }
+
     const supabase = await createClient()
-
-    // IMPORTANT: Clear any existing session (e.g. from an Admin) to avoid conflicts
-    // when a different user (Worker/Customer) is trying to set their password.
-    await supabase.auth.signOut()
-
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
       // If we have a type, we might need a specific redirect (like recovery -> set-password)
