@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
+import LoginButton from '@/components/auth/LoginButton'
 
 export default async function Login({
   params,
@@ -95,9 +96,7 @@ export default async function Login({
             placeholder={t('passwordPlaceholder')}
             required
           />
-          <button className="bg-indigo-600 hover:bg-indigo-700 rounded-lg px-4 py-3 text-white font-semibold mb-4 transition-colors">
-            {t('signIn')}
-          </button>
+          <LoginButton />
           {message && (
             <div 
               className={`mt-4 p-4 text-center text-sm border-l-4 rounded ${
