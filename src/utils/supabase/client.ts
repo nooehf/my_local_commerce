@@ -10,6 +10,13 @@ export function createClient() {
 
   return createBrowserClient(
     supabaseUrl,
-    supabaseAnonKey
+    supabaseAnonKey,
+    {
+      cookieOptions: {
+        path: '/',
+        secure: true,
+        sameSite: 'lax',
+      }
+    }
   )
 }
