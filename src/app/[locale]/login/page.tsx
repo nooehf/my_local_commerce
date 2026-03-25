@@ -2,13 +2,17 @@
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
 
 export default async function Login({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>
   searchParams: Promise<{ message: string }>
 }) {
+  const { locale } = await params
   const { message } = await searchParams
   const t = await getTranslations('Login')
 
@@ -19,16 +23,20 @@ export default async function Login({
     const password = formData.get('password') as string
     const supabase = await createClient()
 
+    // Read locale from next-intl middleware header (available inside Server Actions)
+    const headersList = await headers()
+    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
-      return redirect('/login?message=Could not authenticate user')
+      return redirect(`/${currentLocale}/login?message=Could not authenticate user`)
     }
 
-    return redirect('/dashboard')
+    return redirect(`/${currentLocale}/dashboard`)
   }
 
   return (

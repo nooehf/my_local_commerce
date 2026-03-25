@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -35,9 +36,12 @@ export default async function NewReservationPage({
 
   const createReservation = async (formData: FormData) => {
     'use server'
+    const headersList = await headers()
+    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+
     const supabaseAction = await createClient()
     const { data: { user: userAction } } = await supabaseAction.auth.getUser()
-    if (!userAction) return redirect('/login')
+    if (!userAction) return redirect(`/${currentLocale}/login`)
 
     const customerId = formData.get('customer_id') as string
     const serviceId = formData.get('service_id') as string
@@ -54,7 +58,7 @@ export default async function NewReservationPage({
       .single()
 
     if (!selectedService) {
-      return redirect(`/dashboard/reservations/new?error=${encodeURIComponent('Servicio no encontrado')}`)
+      return redirect(`/${currentLocale}/dashboard/reservations/new?error=${encodeURIComponent('Servicio no encontrado')}`)
     }
 
     // Calculate end_time
@@ -76,10 +80,10 @@ export default async function NewReservationPage({
     })
 
     if (error) {
-      return redirect(`/dashboard/reservations/new?error=${encodeURIComponent(error.message)}`)
+      return redirect(`/${currentLocale}/dashboard/reservations/new?error=${encodeURIComponent(error.message)}`)
     }
 
-    redirect('/dashboard/reservations')
+    redirect(`/${currentLocale}/dashboard/reservations`)
   }
 
   return (

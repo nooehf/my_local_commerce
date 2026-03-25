@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft, User, Mail, Phone, Info, StickyNote, CheckCircle2 } from 'lucide-react'
 
@@ -13,9 +14,12 @@ export default async function NewCustomerPage({
 
   const createCustomerAction = async (formData: FormData) => {
     'use server'
+    const headersList = await headers()
+    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    if (!user) return redirect(`/${currentLocale}/login`)
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -23,7 +27,7 @@ export default async function NewCustomerPage({
       .eq('id', user.id)
       .single()
 
-    if (!profile?.business_id) return redirect('/dashboard/customers')
+    if (!profile?.business_id) return redirect(`/${currentLocale}/dashboard/customers`)
 
     const firstName = formData.get('first_name') as string
     const lastName = formData.get('last_name') as string || null
@@ -32,7 +36,7 @@ export default async function NewCustomerPage({
     const notes = formData.get('notes') as string || null
 
     if (!firstName || !email) {
-      return redirect(`/dashboard/customers/new?error=${encodeURIComponent('Nombre y Email son obligatorios.')}`)
+      return redirect(`/${currentLocale}/dashboard/customers/new?error=${encodeURIComponent('Nombre y Email son obligatorios.')}`)
     }
 
     const adminClient = createAdminClient()
@@ -59,7 +63,7 @@ export default async function NewCustomerPage({
         const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers()
         
         if (listError) {
-          return redirect(`/dashboard/customers/new?error=${encodeURIComponent('Error al buscar usuario existente: ' + listError.message)}`)
+          return redirect(`/${currentLocale}/dashboard/customers/new?error=${encodeURIComponent('Error al buscar usuario existente: ' + listError.message)}`)
         }
 
         const existingUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase())
@@ -77,10 +81,10 @@ export default async function NewCustomerPage({
             }
           })
         } else {
-          return redirect(`/dashboard/customers/new?error=${encodeURIComponent(authError.message)}`)
+          return redirect(`/${currentLocale}/dashboard/customers/new?error=${encodeURIComponent(authError.message)}`)
         }
       } else {
-        return redirect(`/dashboard/customers/new?error=${encodeURIComponent(authError.message)}`)
+        return redirect(`/${currentLocale}/dashboard/customers/new?error=${encodeURIComponent(authError.message)}`)
       }
     } else {
       authUserId = authData.user.id
@@ -100,10 +104,10 @@ export default async function NewCustomerPage({
     if (customerError) {
       // If the error is 'duplicate key' on email in public.customers, it means 
       // there's already a CRM record for this email in this business (or another).
-      return redirect(`/dashboard/customers/new?error=${encodeURIComponent('Este cliente ya está registrado en tu base de datos.')}`)
+      return redirect(`/${currentLocale}/dashboard/customers/new?error=${encodeURIComponent('Este cliente ya está registrado en tu base de datos.')}`)
     }
 
-    redirect('/dashboard/customers')
+    redirect(`/${currentLocale}/dashboard/customers`)
   }
 
   const inputClasses = "block w-full rounded-xl border-0 py-3 px-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-slate-50/50"

@@ -42,6 +42,7 @@ export default function BusinessDataForm({ business }: Props) {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -49,10 +50,10 @@ export default function BusinessDataForm({ business }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 200 * 1024) {
-      setError('La foto no puede superar los 200 KB.')
+      setPhotoError('La foto no puede superar los 200 KB.')
       return
     }
-    setError(null)
+    setPhotoError(null)
     setPhotoFile(file)
     setPhotoPreview(URL.createObjectURL(file))
   }
@@ -162,13 +163,18 @@ export default function BusinessDataForm({ business }: Props) {
               {photoPreview ? 'Cambiar foto' : 'Subir foto'}
             </button>
             <p className="text-xs text-slate-400 mt-1">PNG, JPG o WebP · Máx 200 KB</p>
+            {photoError && (
+              <div className="mt-2 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-2 py-1.5 inline-block">
+                {photoError}
+              </div>
+            )}
             {photoFile && (
               <button
                 type="button"
-                onClick={() => { setPhotoFile(null); setPhotoPreview(photoUrl); }}
-                className="mt-1 text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1"
+                onClick={() => { setPhotoFile(null); setPhotoPreview(photoUrl); setPhotoError(null); }}
+                className="mt-2 text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-medium bg-rose-50/50 px-2 py-1 rounded-lg"
               >
-                <X className="w-3 h-3" /> Cancelar
+                <X className="w-3.5 h-3.5" /> Quitar foto
               </button>
             )}
           </div>

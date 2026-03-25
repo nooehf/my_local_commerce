@@ -9,6 +9,15 @@ export async function updateSession(request: NextRequest) {
   // Run i18n routing first
   let response = handleI18nRouting(request)
 
+  // Detect locale from path for redirects
+  const path = request.nextUrl.pathname
+  const localeMatch = path.match(/^\/(en|es)/)
+  const locale = localeMatch ? localeMatch[1] : routing.defaultLocale
+
+  // Forward locale as a header so Server Actions can access it via headers()
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-next-intl-locale', locale)
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -30,9 +39,6 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
-  const localeMatch = path.match(/^\/(en|es)/)
-  const locale = localeMatch ? `/${localeMatch[1]}` : `/${routing.defaultLocale}`
   const isCustomer = user?.user_metadata?.role === 'customer'
 
   const isDashboard = path.match(/^\/(en|es)\/dashboard/) || path.startsWith('/dashboard')
@@ -43,31 +49,34 @@ export async function updateSession(request: NextRequest) {
   // Unauthenticated: protect dashboard and customer area
   if (!user && (isDashboard || isCustomerArea || isSetPassword)) {
     const url = request.nextUrl.clone()
-    url.pathname = `${locale}/login`
+    url.pathname = `/${locale}/login`
     return NextResponse.redirect(url)
   }
 
   // Customer trying to access the owner dashboard → redirect to their profile
   if (user && isCustomer && isDashboard) {
     const url = request.nextUrl.clone()
-    url.pathname = `${locale}/customer`
+    url.pathname = `/${locale}/customer`
     return NextResponse.redirect(url)
   }
 
   // Owner trying to access the customer area → redirect to dashboard
   if (user && !isCustomer && isCustomerArea) {
     const url = request.nextUrl.clone()
-    url.pathname = `${locale}/dashboard`
+    url.pathname = `/${locale}/dashboard`
     return NextResponse.redirect(url)
   }
 
   // Logged-in user on login/register → redirect by role
   if (user && isAuth) {
     const url = request.nextUrl.clone()
-    url.pathname = isCustomer ? `${locale}/customer` : `${locale}/dashboard`
+    url.pathname = isCustomer ? `/${locale}/customer` : `/${locale}/dashboard`
     return NextResponse.redirect(url)
   }
 
+  // Pass x-next-intl-locale header through to the page/server actions
+  // Using the Next.js specifically designated header mechanism to mutate request headers
+  response.headers.set('x-middleware-request-x-next-intl-locale', locale)
+  
   return response
 }
-

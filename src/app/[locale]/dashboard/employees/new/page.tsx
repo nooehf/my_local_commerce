@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -12,9 +13,12 @@ export default async function NewEmployeePage({
 
   const createEmployee = async (formData: FormData) => {
     'use server'
+    const headersList = await headers()
+    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    if (!user) return redirect(`/${currentLocale}/login`)
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -22,7 +26,7 @@ export default async function NewEmployeePage({
       .eq('id', user.id)
       .single()
 
-    if (!profile?.business_id) return redirect('/dashboard/employees')
+    if (!profile?.business_id) return redirect(`/${currentLocale}/dashboard/employees`)
 
     const { error } = await supabase.from('employees').insert({
       business_id: profile.business_id,
@@ -33,8 +37,8 @@ export default async function NewEmployeePage({
       status: 'active',
     })
 
-    if (error) return redirect(`/dashboard/employees/new?error=${encodeURIComponent(error.message)}`)
-    redirect('/dashboard/employees')
+    if (error) return redirect(`/${currentLocale}/dashboard/employees/new?error=${encodeURIComponent(error.message)}`)
+    redirect(`/${currentLocale}/dashboard/employees`)
   }
 
   return (

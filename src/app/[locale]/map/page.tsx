@@ -1,11 +1,11 @@
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import dynamic from 'next/dynamic'
 import { MapPin, Store } from 'lucide-react'
 
 import MapWrapper from '@/components/MapWrapper'
 
 export default async function MapPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: businesses } = await supabase
     .from('businesses')

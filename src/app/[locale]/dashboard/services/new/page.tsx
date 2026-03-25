@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -12,9 +13,12 @@ export default async function NewServicePage({
 
   const createService = async (formData: FormData) => {
     'use server'
+    const headersList = await headers()
+    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    if (!user) return redirect(`/${currentLocale}/login`)
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -22,7 +26,7 @@ export default async function NewServicePage({
       .eq('id', user.id)
       .single()
 
-    if (!profile?.business_id) return redirect('/dashboard/services')
+    if (!profile?.business_id) return redirect(`/${currentLocale}/dashboard/services`)
 
     const { error } = await supabase.from('services').insert({
       business_id: profile.business_id,
@@ -34,8 +38,8 @@ export default async function NewServicePage({
       active: formData.get('active') === 'on',
     })
 
-    if (error) return redirect(`/dashboard/services/new?error=${encodeURIComponent(error.message)}`)
-    redirect('/dashboard/services')
+    if (error) return redirect(`/${currentLocale}/dashboard/services/new?error=${encodeURIComponent(error.message)}`)
+    redirect(`/${currentLocale}/dashboard/services`)
   }
 
   return (

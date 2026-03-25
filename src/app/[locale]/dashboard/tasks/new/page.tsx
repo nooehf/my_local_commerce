@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -22,9 +23,12 @@ export default async function NewTaskPage() {
 
   const createTask = async (formData: FormData) => {
     'use server'
+    const headersList = await headers()
+    const currentLocale = headersList.get('x-next-intl-locale') ?? 'es'
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    if (!user) return redirect(`/${currentLocale}/login`)
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -32,7 +36,7 @@ export default async function NewTaskPage() {
       .eq('id', user.id)
       .single()
 
-    if (!profile?.business_id) return redirect('/dashboard/tasks')
+    if (!profile?.business_id) return redirect(`/${currentLocale}/dashboard/tasks`)
 
     const assigned_profile_id = formData.get('assigned_to') as string
     let employee_id: string | null = null
@@ -55,8 +59,8 @@ export default async function NewTaskPage() {
       status: 'pending',
     })
 
-    if (!error) redirect('/dashboard/tasks')
-    redirect(`/dashboard/tasks/new?error=${error.message}`)
+    if (!error) redirect(`/${currentLocale}/dashboard/tasks`)
+    redirect(`/${currentLocale}/dashboard/tasks/new?error=${error.message}`)
   }
 
   return (

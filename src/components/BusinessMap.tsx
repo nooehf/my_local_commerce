@@ -49,14 +49,45 @@ export default function BusinessMap({ businesses }: Props) {
       }).addTo(map)
 
       businesses.forEach(b => {
+        // Card-style HTML with image seamlessly filling the top
+        const photoHtml = b.photo_url 
+          ? `<img src="${b.photo_url}" class="w-full h-[72px] object-cover border-b border-slate-100" />`
+          : `<div class="w-full h-[72px] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border-b border-slate-100/50">
+               <span class="text-white font-bold text-2xl drop-shadow-sm">${(b.name || 'N').charAt(0).toUpperCase()}</span>
+             </div>`;
+
+        const iconHtml = `
+          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center cursor-pointer group w-max">
+            <!-- Vertical Card Box (overflow-hidden to crop image to borders) -->
+            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.12)] ring-1 ring-slate-900/5 transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:shadow-[0_12px_24px_rgba(79,70,229,0.25)] group-hover:ring-indigo-500/50 w-[72px] overflow-hidden flex flex-col">
+              ${photoHtml}
+              <div class="px-1.5 py-1.5 flex items-center justify-center min-h-[30px] bg-white">
+                <span class="font-bold text-[10px] text-slate-800 tracking-tight text-center leading-[1.15] line-clamp-2">${b.name || 'Negocio'}</span>
+              </div>
+            </div>
+            <!-- Pointer Arrow -->
+            <div class="w-4 h-4 bg-white ring-1 ring-slate-900/5 rotate-45 -mt-[9px] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:ring-indigo-500/50" style="clip-path: polygon(100% 0, 100% 100%, 0 100%);"></div>
+          </div>
+        `;
+
+        const customIcon = L.divIcon({
+          html: iconHtml,
+          className: 'bg-transparent border-none',
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+          popupAnchor: [0, -96] // Adjusted further up to match the taller card
+        });
+
         const popup = `
           <div style="min-width:180px;font-family:sans-serif">
-            ${b.photo_url ? `<img src="${b.photo_url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" />` : ''}
-            <strong style="font-size:15px;color:#0f172a;display:block;margin-bottom:4px">${b.name || 'Negocio'}</strong>
-            ${b.description ? `<p style="font-size:13px;color:#475569;margin:0;line-height:1.4">${b.description}</p>` : ''}
+            ${b.photo_url ? `<img src="${b.photo_url}" style="width:100%;height:120px;object-fit:cover;border-radius:12px;margin-bottom:12px" />` : ''}
+            <strong style="font-size:16px;color:#0f172a;display:block;margin-bottom:4px">${b.name || 'Negocio'}</strong>
+            <span style="font-size:13px;color:#64748b;display:block;margin-bottom:8px">${b.address || ''}</span>
+            ${b.description ? `<p style="font-size:14px;color:#475569;margin:0;line-height:1.5">${b.description}</p>` : ''}
           </div>
         `
-        L.marker([b.latitude, b.longitude])
+
+        L.marker([b.latitude, b.longitude], { icon: customIcon })
           .addTo(map)
           .bindPopup(popup)
       })
