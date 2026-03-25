@@ -19,20 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   console.log(`[AUTH-CONFIRM] Incoming request: ${request.url}`)
   
   if (code) {
-    console.log(`[AUTH-CONFIRM] Code provided: ${code.substring(0, 5)}...`)
-    
-    // SURGICAL LOGOUT: Manually clear ONLY the session cookie for this project.
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    if (supabaseUrl) {
-      const projectRef = supabaseUrl.split('.')[0].split('//')[1]
-      const sessionCookieName = `sb-${projectRef}-auth-token`
-      console.log(`[AUTH-CONFIRM] Purging session cookie: ${sessionCookieName}`)
-      const cookieStore = await cookies()
-      cookieStore.delete(sessionCookieName)
-    }
-
     const supabase = await createClient()
-    console.log(`[AUTH-CONFIRM] Exchanging code for session...`)
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (error) {
@@ -43,13 +30,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       // If we have a type, we might need a specific redirect (like recovery -> set-password)
       if (type === 'recovery' || next.includes('set-password')) {
         redirectTo.pathname = `/${locale}/set-password`
+        // 100% GUARANTEE: Pass the UID to verify correct session in the destination page
+        if (data.user) redirectTo.searchParams.set('uid', data.user.id)
       } else {
         const cleanNext = next.startsWith('/') ? next : `/${next}`
         redirectTo.pathname = cleanNext.startsWith(`/${locale}`) ? cleanNext : `/${locale}${cleanNext}`
       }
       
       console.log(`[AUTH-CONFIRM] Redirecting to: ${redirectTo.href}`)
-      return NextResponse.redirect(redirectTo)
+      
+      const response = NextResponse.redirect(redirectTo)
+      const cookieStore = await cookies()
+      cookieStore.getAll().forEach(c => {
+        response.cookies.set(c.name, c.value, c)
+      })
+      return response
     }
   } else {
     console.warn(`[AUTH-CONFIRM] NO CODE provided in URL`)

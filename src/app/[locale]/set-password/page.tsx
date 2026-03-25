@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { KeyRound, Eye, EyeOff, CheckCircle2, ShieldCheck } from 'lucide-react'
 
 export default function SetPasswordPage() {
@@ -17,13 +17,26 @@ export default function SetPasswordPage() {
 
   const supabase = createClient()
 
+  const searchParams = useSearchParams()
+  const expectedUid = searchParams.get('uid')
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
+      
+      // 100% GUARANTEE: If the session in the browser doesn't match the UID from the link,
+      // it means an old session (Admin) is interfering. We FORCE a logout to clean up.
+      if (user && expectedUid && user.id !== expectedUid) {
+        console.warn('[AUTH] Session mismatch detected. Forcing logout to isolate account.')
+        await supabase.auth.signOut()
+        window.location.reload()
+        return
+      }
+
       if (user) setUserEmail(user.email || null)
     }
     checkUser()
-  }, [])
+  }, [expectedUid])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
