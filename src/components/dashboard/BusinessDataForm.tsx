@@ -236,14 +236,14 @@ export default function BusinessDataForm({ business }: Props) {
           <input
             type="text"
             value={address}
-            onChange={e => { 
+            onChange={e => {
               const val = e.target.value
               setAddress(val)
               if (val.trim() === '') {
                 setLatitude(null)
                 setLongitude(null)
               }
-              searchLocation(val) 
+              searchLocation(val)
             }}
             placeholder="Busca una dirección o ciudad..."
             className={`${inputClass} pl-11`}
@@ -269,17 +269,17 @@ export default function BusinessDataForm({ business }: Props) {
             <p className="mb-2 text-xs text-emerald-600 font-medium flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <div>
-                Ubicación confirmada. 
+                Ubicación confirmada.
                 <span className="text-slate-500 ml-1 font-normal block sm:inline">Arrastra el marcador azul si necesitas ajustar el punto exacto al número de tu calle.</span>
               </div>
             </p>
-            <DraggableMapWrapper 
-              latitude={latitude} 
-              longitude={longitude} 
+            <DraggableMapWrapper
+              latitude={latitude}
+              longitude={longitude}
               onChange={(lat, lng) => {
                 setLatitude(lat);
                 setLongitude(lng);
-              }} 
+              }}
             />
           </div>
         )}
