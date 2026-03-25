@@ -42,7 +42,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       const response = NextResponse.redirect(redirectTo)
       const cookieStore = await cookies()
       cookieStore.getAll().forEach(c => {
-        response.cookies.set(c.name, c.value, c)
+        // CRITICAL FIX: Explicitly set path to / to ensure the cookie is 
+        // sent to /set-password and other localized routes.
+        response.cookies.set(c.name, c.value, { ...c, path: '/', sameSite: 'lax', secure: true })
       })
       return response
     }
