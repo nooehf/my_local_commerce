@@ -47,7 +47,7 @@ export async function updateSession(request: NextRequest) {
   const isSetPassword = path.match(/^\/(en|es)\/set-password/) || path.startsWith('/set-password')
 
   // Unauthenticated: protect dashboard and customer area
-  if (!user && (isDashboard || isCustomerArea || isSetPassword)) {
+  if (!user && (isDashboard || isCustomerArea)) {
     const url = request.nextUrl.clone()
     url.pathname = `/${locale}/login`
     return NextResponse.redirect(url)
