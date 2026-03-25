@@ -37,6 +37,13 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
+  const isSetPassword = path.match(/^\/(en|es)\/set-password/) || path.startsWith('/set-password')
+
+  // CRITICAL FIX FOR ADMIN RESET: If we are on the password setup page, don't touch the session here.
+  // Touching the session in the middleware during a recovery flow can invalidate 
+  // the session for the actual update request.
+  if (isSetPassword) return response
+
   const { data: { user } } = await supabase.auth.getUser()
 
   const isCustomer = user?.user_metadata?.role === 'customer'
@@ -44,7 +51,6 @@ export async function updateSession(request: NextRequest) {
   const isDashboard = path.match(/^\/(en|es)\/dashboard/) || path.startsWith('/dashboard')
   const isCustomerArea = path.match(/^\/(en|es)\/customer/) || path.startsWith('/customer')
   const isAuth = path.match(/^\/(en|es)\/(login|register)/) || path.startsWith('/login') || path.startsWith('/register')
-  const isSetPassword = path.match(/^\/(en|es)\/set-password/) || path.startsWith('/set-password')
 
   // Unauthenticated: protect dashboard and customer area
   if (!user && (isDashboard || isCustomerArea)) {
