@@ -47,7 +47,8 @@ export default async function NewCustomerPage({
     const host = headersList.get('host')
     const protocol = host?.includes('localhost') ? 'http' : 'https'
     const origin = `${protocol}://${host}`
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+    const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1')
+    const siteUrl = isLocal ? origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.mylocalcommerce.com')
 
     const { data: authData, error: authError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {

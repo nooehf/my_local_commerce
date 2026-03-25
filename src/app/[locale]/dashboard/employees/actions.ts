@@ -38,7 +38,8 @@ export async function inviteWorkerAction(formData: FormData, locale: string) {
   const host = headersList.get('host')
   const protocol = host?.includes('localhost') ? 'http' : 'https'
   const origin = `${protocol}://${host}`
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+  const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1')
+  const siteUrl = isLocal ? origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.mylocalcommerce.com')
 
   // 1. Invite User
   const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
