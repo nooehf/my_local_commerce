@@ -14,7 +14,11 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleAuth = async () => {
       const code = searchParams.get('code')
-      const next = searchParams.get('next') ?? `/${locale}`
+      const next = searchParams.get('next') ?? `/${locale}/dashboard`
+      
+      console.log('Auth Callback - Code:', code ? 'Present' : 'Missing')
+      console.log('Auth Callback - Next:', next)
+      console.log('Auth Callback - Hash:', window.location.hash ? 'Present' : 'Missing')
 
       if (code) {
         // Handle PKCE (code from query)

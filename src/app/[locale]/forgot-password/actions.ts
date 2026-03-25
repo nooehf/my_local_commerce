@@ -8,7 +8,10 @@ export async function resetPasswordAction(formData: FormData, locale: string) {
   if (!email) return { error: 'Email is required' }
 
   const supabase = await createClient()
-  const origin = (await headers()).get('origin')
+  const headersList = await headers()
+  const host = headersList.get('host')
+  const protocol = host?.includes('localhost') ? 'http' : 'https'
+  const origin = `${protocol}://${host}`
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/${locale}/auth/callback?next=/${locale}/set-password`,
