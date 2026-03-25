@@ -100,7 +100,10 @@ export default async function Login({
           {message && (
             <div 
               className={`mt-4 p-4 text-center text-sm border-l-4 rounded ${
-                message.toLowerCase().includes('error') || message.toLowerCase().includes('could not') 
+                message.toLowerCase().includes('error') || 
+                message.toLowerCase().includes('could not') || 
+                message.toLowerCase().includes('invalid') ||
+                message.toLowerCase().includes('not found')
                   ? 'bg-red-50 text-red-700 border-red-500' 
                   : 'bg-emerald-50 text-emerald-700 border-emerald-500'
               }`}
