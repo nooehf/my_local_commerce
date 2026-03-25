@@ -1,7 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Plus, Mail, UsersRound, Phone } from 'lucide-react'
+import { Plus, Mail, UsersRound, Phone, Trash2 } from 'lucide-react'
+import DeleteEmployeeButton from '@/components/dashboard/DeleteEmployeeButton'
 
 export default async function EmployeesPage({ params }: { params: Promise<{ locale: string }> }) {
   const supabase = await createClient()
@@ -18,6 +19,7 @@ export default async function EmployeesPage({ params }: { params: Promise<{ loca
     return redirect(`/${locale}/dashboard`)
   }
 
+  const { locale } = await params
   const { data: employees } = await supabase
     .from('employees')
     .select('id, name, first_name, last_name, email, phone, position, status, photo_url')
@@ -62,8 +64,17 @@ export default async function EmployeesPage({ params }: { params: Promise<{ loca
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-6">
           {employees.map((employee) => (
-            <div key={employee.id} className="col-span-1 flex flex-col divide-y divide-slate-200 rounded-xl bg-white text-center shadow-sm border border-slate-200 hover:shadow-md transition-all">
-              <div className="flex flex-1 flex-col p-8">
+              <div key={employee.id} className="relative group col-span-1 flex flex-col divide-y divide-slate-200 rounded-xl bg-white text-center shadow-sm border border-slate-200 hover:shadow-md transition-all">
+                {/* Delete Button - Top Right */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DeleteEmployeeButton 
+                    employeeId={employee.id} 
+                    employeeName={employee.name || `${employee.first_name} ${employee.last_name}`}
+                    locale={locale}
+                  />
+                </div>
+
+                <div className="flex flex-1 flex-col p-8">
                 {employee.photo_url ? (
                   <img src={employee.photo_url} alt={employee.name || ''} className="mx-auto h-20 w-20 flex-shrink-0 rounded-full object-cover ring-4 ring-indigo-50" />
                 ) : (
@@ -93,9 +104,9 @@ export default async function EmployeesPage({ params }: { params: Promise<{ loca
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                     employee.status === 'active'
                       ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20'
-                      : 'bg-slate-100 text-slate-600'
+                      : 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20'
                   }`}>
-                    {employee.status === 'active' ? 'Activo / Invitado' : employee.status}
+                    {employee.status === 'active' ? 'Activo' : 'Invitado (Pendiente)'}
                   </span>
                 </div>
               </div>

@@ -43,6 +43,11 @@ export default function SetPasswordPage() {
       .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
       .single()
 
+    if (profile?.role === 'employee') {
+      const { activateEmployeeAction } = await import('../dashboard/employees/actions')
+      await activateEmployeeAction()
+    }
+
     if (profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'employee') {
       router.push('/es/dashboard')
     } else {
