@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import 'leaflet/dist/leaflet.css'
 
 interface Business {
@@ -15,18 +15,21 @@ interface Business {
 
 interface Props {
   businesses: Business[]
+  selectedBusinessId?: string | null
 }
 
-export default function BusinessMap({ businesses }: Props) {
+export default function BusinessMap({ businesses, selectedBusinessId }: Props) {
+  const [mapReady, setMapReady] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null)
+  const markersRef = useRef<{ [key: string]: import('leaflet').Marker }>({})
+  const selectedBusinessIdRef = useRef(selectedBusinessId)
 
+  // Initialization: Create map once
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
-    // Dynamically import Leaflet (client-only)
     import('leaflet').then(L => {
-      // Fix default icon paths broken by webpack
       delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
       L.Icon.Default.mergeOptions({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -34,15 +37,14 @@ export default function BusinessMap({ businesses }: Props) {
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
 
-      // Calculate initial center
+      if ((mapRef.current as any)._leaflet_id) {
+        return;
+      }
+
       const center: [number, number] =
         businesses.length > 0
           ? [businesses[0].latitude, businesses[0].longitude]
           : [40.416775, -3.70379] // Madrid default
-
-      if ((mapRef.current as any)._leaflet_id) {
-        return;
-      }
 
       const map = L.map(mapRef.current!).setView(center, businesses.length > 1 ? 6 : 13)
       mapInstanceRef.current = map
@@ -51,9 +53,31 @@ export default function BusinessMap({ businesses }: Props) {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 18,
       }).addTo(map)
+      
+      setTimeout(() => map.invalidateSize(), 200)
+      setMapReady(true)
+    })
+
+    return () => {
+      mapInstanceRef.current?.remove()
+      mapInstanceRef.current = null
+      markersRef.current = {}
+    }
+  }, []) // Empty deps = run once!
+
+  // Marker Sync: Re-run only when the actual list of businesses changes
+  const businessIds = businesses.map(b => b.id).join(',')
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current) return
+
+    import('leaflet').then(L => {
+      const map = mapInstanceRef.current!
+
+      // Remove existing markers
+      Object.values(markersRef.current).forEach(m => m.remove())
+      markersRef.current = {}
 
       businesses.forEach(b => {
-        // Card-style HTML with image seamlessly filling the top
         const photoHtml = b.photo_url 
           ? `<img src="${b.photo_url}" class="w-full h-[72px] object-cover border-b border-slate-100" />`
           : `<div class="w-full h-[72px] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border-b border-slate-100/50">
@@ -62,14 +86,12 @@ export default function BusinessMap({ businesses }: Props) {
 
         const iconHtml = `
           <div class="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center cursor-pointer group w-max">
-            <!-- Vertical Card Box (overflow-hidden to crop image to borders) -->
             <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.12)] ring-1 ring-slate-900/5 transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-105 group-hover:shadow-[0_12px_24px_rgba(79,70,229,0.25)] group-hover:ring-indigo-500/50 w-[72px] overflow-hidden flex flex-col">
               ${photoHtml}
               <div class="px-1.5 py-1.5 flex items-center justify-center min-h-[30px] bg-white">
                 <span class="font-bold text-[10px] text-slate-800 tracking-tight text-center leading-[1.15] line-clamp-2">${b.name || 'Negocio'}</span>
               </div>
             </div>
-            <!-- Pointer Arrow -->
             <div class="w-4 h-4 bg-white ring-1 ring-slate-900/5 rotate-45 -mt-[9px] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:ring-indigo-500/50" style="clip-path: polygon(100% 0, 100% 100%, 0 100%);"></div>
           </div>
         `;
@@ -79,7 +101,7 @@ export default function BusinessMap({ businesses }: Props) {
           className: 'bg-transparent border-none',
           iconSize: [0, 0],
           iconAnchor: [0, 0],
-          popupAnchor: [0, -96] // Adjusted further up to match the taller card
+          popupAnchor: [0, -96]
         });
 
         const popup = `
@@ -91,28 +113,44 @@ export default function BusinessMap({ businesses }: Props) {
           </div>
         `
 
-        L.marker([b.latitude, b.longitude], { icon: customIcon })
+        const marker = L.marker([b.latitude, b.longitude], { icon: customIcon })
           .addTo(map)
           .bindPopup(popup)
+        
+        markersRef.current[b.id] = marker
       })
 
-      // Fit map to all markers
-      if (businesses.length > 1) {
+      // Fit map to all markers if there is no selection
+      if (!selectedBusinessIdRef.current && businesses.length > 1) {
         const bounds = L.latLngBounds(businesses.map(b => [b.latitude, b.longitude]))
         map.fitBounds(bounds, { padding: [40, 40] })
       }
-
-      // Fix race condition with CSS loading and containers
-      setTimeout(() => {
-        map.invalidateSize()
-      }, 200)
     })
+  }, [businessIds, mapReady]) // We only re-run marker creation when the subset of business IDs changes or map just became ready
 
-    return () => {
-      mapInstanceRef.current?.remove()
-      mapInstanceRef.current = null
-    }
-  }, [businesses])
+  // Selection Handler: FlyTo logic
+  useEffect(() => {
+    selectedBusinessIdRef.current = selectedBusinessId
+    if (!mapInstanceRef.current || !selectedBusinessId) return
+
+    import('leaflet').then(L => {
+      const map = mapInstanceRef.current!
+      const marker = markersRef.current[selectedBusinessId]
+      const business = businesses.find(b => b.id === selectedBusinessId)
+
+      if (marker && business) {
+        map.flyTo([business.latitude, business.longitude], 17, {
+          animate: true,
+          duration: 1.5
+        })
+        
+        // Wait for animation to mostly finish before opening popup
+        setTimeout(() => {
+          marker.openPopup()
+        }, 1500)
+      }
+    })
+  }, [selectedBusinessId, businesses])
 
   return (
     <div 
