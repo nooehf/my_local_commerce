@@ -34,7 +34,7 @@ export default async function Login({
     })
 
     if (error) {
-      return redirect(`/${currentLocale}/login?message=Could not authenticate user`)
+      return redirect(`/${currentLocale}/login?message=${encodeURIComponent(error.message)}`)
     }
 
     return redirect(`/${currentLocale}/dashboard`)
