@@ -21,7 +21,10 @@ export const metadata: Metadata = {
   description: 'Manage your local business from anywhere.',
   icons: {
     icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
+  manifest: '/manifest.json',
 };
 
 export default async function RootLayout({
