@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/utils/supabase/admin'
+import { createClient } from '@/utils/supabase/server'
 import { MapPin } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
@@ -6,14 +6,19 @@ import MapInteractive from '@/components/map/MapInteractive'
 import PublicNavbar from '@/components/PublicNavbar'
 
 export default async function MapPage() {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const t = await getTranslations('Map')
 
-  const { data: businesses } = await supabase
+  const { data: businesses, error } = await supabase
     .from('businesses')
     .select('id, name, address, description, latitude, longitude, photo_url')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
+
+  console.log('--- MAP DEBUG ---')
+  console.log('Businesses count:', businesses?.length || 0)
+  if (error) console.error('Supabase error:', error)
+  if (businesses) console.log('Sample business:', businesses[0])
 
   const validBusinesses = (businesses || []).filter(
     b => b.latitude !== null && b.longitude !== null
