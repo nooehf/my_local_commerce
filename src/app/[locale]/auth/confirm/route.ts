@@ -18,13 +18,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (code) {
     const supabase = await createClient()
 
+    // IMPORTANT: Clear any existing session (e.g. from an Admin) to avoid conflicts
+    // when a different user (Worker/Customer) is trying to set their password.
+    await supabase.auth.signOut()
+
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
       // If we have a type, we might need a specific redirect (like recovery -> set-password)
-      if (type === 'recovery') {
+      if (type === 'recovery' || next.includes('set-password')) {
         redirectTo.pathname = `/${locale}/set-password`
       } else {
-        redirectTo.pathname = `/${locale}${next.startsWith('/') ? next : `/${next}`}`
+        const cleanNext = next.startsWith('/') ? next : `/${next}`
+        // Avoid double locale if next already has it
+        redirectTo.pathname = cleanNext.startsWith(`/${locale}`) ? cleanNext : `/${locale}${cleanNext}`
       }
       return NextResponse.redirect(redirectTo)
     }

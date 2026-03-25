@@ -44,6 +44,11 @@ export default async function NewCustomerPage({
     // 1. Send Invitation via Supabase Auth
     let authUserId: string | undefined
 
+    const host = headersList.get('host')
+    const protocol = host?.includes('localhost') ? 'http' : 'https'
+    const origin = `${protocol}://${host}`
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+
     const { data: authData, error: authError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
         full_name: lastName ? `${firstName} ${lastName}` : firstName,
@@ -53,7 +58,7 @@ export default async function NewCustomerPage({
         last_name: lastName,
         locale: currentLocale
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${currentLocale}/auth/callback?next=/${currentLocale}/set-password`
+      redirectTo: `${siteUrl}/${currentLocale}/auth/confirm?type=invite&next=/${currentLocale}/set-password`
     })
 
     if (authError) {

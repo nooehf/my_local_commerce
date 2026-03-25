@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 export async function inviteWorkerAction(formData: FormData, locale: string) {
   const supabase = await createClient()
@@ -33,6 +34,12 @@ export async function inviteWorkerAction(formData: FormData, locale: string) {
     throw new Error('Email y nombre son obligatorios')
   }
 
+  const headersList = await headers()
+  const host = headersList.get('host')
+  const protocol = host?.includes('localhost') ? 'http' : 'https'
+  const origin = `${protocol}://${host}`
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+
   // 1. Invite User
   const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
     data: {
@@ -42,7 +49,7 @@ export async function inviteWorkerAction(formData: FormData, locale: string) {
       last_name: lastName,
       locale
     },
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${locale}/auth/callback?next=/${locale}/set-password`
+    redirectTo: `${siteUrl}/${locale}/auth/confirm?type=invite&next=/${locale}/set-password`
   })
 
   if (inviteError) throw new Error(`Error al invitar: ${inviteError.message}`)
