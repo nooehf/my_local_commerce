@@ -33,20 +33,38 @@ export default function AuthCallbackPage() {
       // Extract the type from query params (passed by our route handler)
       let type = searchParams.get('type')
 
-      // Parse hash fragment manually to support Supabase Magic Links & Invites
+      // Parse hash fragment mechanically to support Supabase Magic Links & Invites
       const hash = window.location.hash
-      if (hash && hash.includes('access_token=')) {
-        console.log('Auth Callback - Processing Hash Fragment')
+      if (hash) {
         const hashParams = new URLSearchParams(hash.substring(1))
+        
+        // If Supabase returned an error in the hash (e.g., link expired)
+        if (hashParams.get('error')) {
+          const errorDesc = hashParams.get('error_description') || hashParams.get('error') || 'Error desconocido'
+          router.replace(`/${locale}/auth/auth-code-error?error=${encodeURIComponent(errorDesc)}`)
+          return
+        }
+
         if (hashParams.get('type')) {
           type = hashParams.get('type')
         }
       }
 
+      // We set up an observer to catch the session the moment the client processes the hash
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
+            router.replace(`/${locale}/set-password?uid=${session.user.id}`)
+          } else {
+            router.replace(next)
+          }
+        }
+      })
+
+      // Check manually in case it already processed before we attached the listener
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session) {
-        // Handle invite/recovery specific routing
         if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
           router.replace(`/${locale}/set-password?uid=${session.user.id}`)
           return
@@ -56,7 +74,7 @@ export default function AuthCallbackPage() {
         if (!hash && !code) {
            router.replace(`/${locale}/auth/auth-code-error?error=no_session_found`)
         } else {
-           // Wait for Supabase client to process the hash automatically
+           // Fallback safety timeout
           setTimeout(async () => {
              const { data: { session: retrySession } } = await supabase.auth.getSession()
              if (retrySession) {
@@ -68,8 +86,13 @@ export default function AuthCallbackPage() {
              } else {
                router.replace(`/${locale}/auth/auth-code-error?error=session_sync_timeout`)
              }
-          }, 1500)
+          }, 3000)
         }
+      }
+
+      // Cleanup listener if component unmounts quickly
+      return () => {
+        subscription.unsubscribe()
       }
     }
 

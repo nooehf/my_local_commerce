@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       const response = NextResponse.redirect(redirectTo)
       const cookieStore = await cookies()
       cookieStore.getAll().forEach(c => {
-        response.cookies.set(c.name, c.value, { ...c, path: '/', sameSite: 'lax', secure: true })
+        response.cookies.set(c.name, c.value, { ...c, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production' })
       })
       return response
     }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       const response = NextResponse.redirect(redirectTo)
       const cookieStore = await cookies()
       cookieStore.getAll().forEach(c => {
-        response.cookies.set(c.name, c.value, { ...c, path: '/', sameSite: 'lax', secure: true })
+        response.cookies.set(c.name, c.value, { ...c, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production' })
       })
       return response
     }

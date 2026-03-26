@@ -8,13 +8,15 @@ export function createClient() {
     throw new Error('Supabase environment variables are missing! Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in Netlify/dotenv.')
   }
 
+  const isProd = process.env.NODE_ENV === 'production'
+
   return createBrowserClient(
     supabaseUrl,
     supabaseAnonKey,
     {
       cookieOptions: {
         path: '/',
-        secure: true,
+        secure: isProd,
         sameSite: 'lax',
       }
     }

@@ -157,16 +157,32 @@ export async function deleteEmployeeAction(employeeId: string, locale: string) {
 
   const profileId = employee.profile_id
 
-  // 1. Delete from employees (handled by DB if cascade, but let's be explicit)
-  await supabase.from('employees').delete().eq('id', employeeId)
+  // 0. Clean up related records to avoid Foreign Key "NO ACTION" errors
+  // Set tasks to unassigned
+  await supabase.from('tasks').update({ assigned_to: null }).eq('assigned_to', employeeId)
+  // Set reservations to unassigned
+  await supabase.from('reservations').update({ employee_id: null }).eq('employee_id', employeeId)
+  // Delete shifts
+  await supabase.from('staff_shifts').delete().eq('employee_id', employeeId)
 
-  // 2. Delete from profiles
+  // 1. Delete from employees
+  const { error: empError } = await supabase.from('employees').delete().eq('id', employeeId)
+  if (empError) {
+    throw new Error(`Error al eliminar datos del trabajador: ${empError.message}`)
+  }
+
+  // 2. Delete from profiles and auth
   if (profileId) {
-    await adminClient.from('profiles').delete().eq('id', profileId)
+    const { error: profileError } = await adminClient.from('profiles').delete().eq('id', profileId)
+    if (profileError) {
+      console.warn(`Could not delete profile (might be deleted by cascade): ${profileError.message}`)
+    }
     
     // 3. Delete from auth.users (IMPORTANT: This requires admin client)
     const { error: authError } = await adminClient.auth.admin.deleteUser(profileId)
-    if (authError) console.error('Error deleting auth user:', authError)
+    if (authError) {
+      throw new Error(`Error al eliminar la cuenta de acceso: ${authError.message}`)
+    }
   }
 
   revalidatePath(`/${locale}/dashboard/employees`)
