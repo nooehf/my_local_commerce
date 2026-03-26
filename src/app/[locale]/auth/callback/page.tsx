@@ -30,29 +30,44 @@ export default function AuthCallbackPage() {
         }
       }
 
-      // The browser client automatically handles tokens in the hash fragment (#access_token=...)
-      // once it's initialized. We just need to wait a small moment for it to sync the session
-      // or check the session explicitly.
-      
+      // Extract the type from query params (passed by our route handler)
+      let type = searchParams.get('type')
+
+      // Parse hash fragment manually to support Supabase Magic Links & Invites
+      const hash = window.location.hash
+      if (hash && hash.includes('access_token=')) {
+        console.log('Auth Callback - Processing Hash Fragment')
+        const hashParams = new URLSearchParams(hash.substring(1))
+        if (hashParams.get('type')) {
+          type = hashParams.get('type')
+        }
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
       
-      // If we have a session (either via code exchange or hash fragment), redirect
       if (session) {
+        // Handle invite/recovery specific routing
+        if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
+          router.replace(`/${locale}/set-password?uid=${session.user.id}`)
+          return
+        }
         router.replace(next)
       } else {
-        // If no session is found after a short bit, it might be an error
-        // But let's check if there's a hash in the URL just in case
-        if (!window.location.hash && !code) {
+        if (!hash && !code) {
            router.replace(`/${locale}/auth/auth-code-error?error=no_session_found`)
         } else {
-          // If there is a hash, give it a tiny bit more time to parse
+           // Wait for Supabase client to process the hash automatically
           setTimeout(async () => {
-            const { data: { session: retrySession } } = await supabase.auth.getSession()
-            if (retrySession) {
-              router.replace(next)
-            } else {
-              router.replace(`/${locale}/auth/auth-code-error?error=session_sync_timeout`)
-            }
+             const { data: { session: retrySession } } = await supabase.auth.getSession()
+             if (retrySession) {
+               if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
+                 router.replace(`/${locale}/set-password?uid=${retrySession.user.id}`)
+               } else {
+                 router.replace(next)
+               }
+             } else {
+               router.replace(`/${locale}/auth/auth-code-error?error=session_sync_timeout`)
+             }
           }, 1500)
         }
       }

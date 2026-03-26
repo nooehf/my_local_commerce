@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { ArrowLeft, User, Mail, Phone, Info, StickyNote, CheckCircle2 } from 'lucide-react'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export default async function NewCustomerPage({
   searchParams,
@@ -261,13 +262,12 @@ export default async function NewCustomerPage({
           <Link href="/dashboard/customers" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">
             Cancelar y volver
           </Link>
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+          <SubmitButton 
+             loadingText="Enviando Invitación..."
+             icon={<CheckCircle2 className="w-4 h-4" />}
           >
-            <CheckCircle2 className="w-4 h-4" />
             Crear y Enviar Invitación
-          </button>
+          </SubmitButton>
         </div>
       </form>
     </div>
