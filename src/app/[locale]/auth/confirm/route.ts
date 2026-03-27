@@ -75,11 +75,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
   } else {
     // If there is no code or token_hash, it might be a magic link or invitation that sends the token in the hash fragment (#access_token=...)
-    console.warn(`[AUTH-CONFIRM] NO CODE/HASH provided. Redirecting to client callback to check for hash fragment.`)
-    redirectTo.pathname = `/${locale}/auth/callback`
-    redirectTo.searchParams.set('next', next)
-    if (type) redirectTo.searchParams.set('type', type)
-    return NextResponse.redirect(redirectTo)
+    // We MUST use a client-side (JS) redirect to preserve the hash fragment, as server-side redirects strip it.
+    const callbackUrl = `/${locale}/auth/callback`
+    console.warn(`[AUTH-CONFIRM] NO CODE/HASH provided. Client-side redirect to: ${callbackUrl}`)
+    
+    return new NextResponse(
+      `<html>
+        <head>
+          <script>
+            window.location.href = "${callbackUrl}" + window.location.search + window.location.hash;
+          </script>
+        </head>
+        <body>Redirecting to login...</body>
+      </html>`,
+      { headers: { 'Content-Type': 'text/html' } }
+    )
   }
 
   // Fallback if exchange/verify failed

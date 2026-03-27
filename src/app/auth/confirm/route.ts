@@ -7,15 +7,21 @@ import { routing } from '@/i18n/routing'
  * Redirects to the default locale's version: /[locale]/auth/confirm
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const redirectTo = request.nextUrl.clone()
-  
-  // Default to the routing setup (e.g., 'es')
   const locale = routing.defaultLocale
+  const url = `/${locale}/auth/confirm`
   
-  redirectTo.pathname = `/${locale}/auth/confirm`
+  console.log(`[AUTH-ROOT] Client-side redirect to locale version: ${url}`)
   
-  console.log(`[AUTH-ROOT] Redirecting to locale version: ${redirectTo.pathname}`)
-  
-  return NextResponse.redirect(redirectTo)
+  // Return a script-based redirect to preserve any # hash fragment from the original URL
+  return new NextResponse(
+    `<html>
+      <head>
+        <script>
+          window.location.href = "${url}" + window.location.search + window.location.hash;
+        </script>
+      </head>
+      <body>Redirecting to ${locale}...</body>
+    </html>`,
+    { headers: { 'Content-Type': 'text/html' } }
+  )
 }
