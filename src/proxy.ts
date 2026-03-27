@@ -7,8 +7,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Include the root
     '/',
+    // Include localized paths
     '/(es|en)/:path*',
-    '/((?!_next|_vercel|auth|.*\\..*).*)'
+    // Include auth paths (crucial for redirects)
+    '/auth/:path*',
+    // Fallback for everything else except static assets
+    '/((?!_next|_vercel|.*\\..*).*)'
   ]
 }
