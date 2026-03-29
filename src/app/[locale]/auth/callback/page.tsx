@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
@@ -8,96 +8,109 @@ export default function AuthCallbackPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const params = useParams()
-  const locale = params?.locale as string || 'es'
+  const locale = (params?.locale as string) || 'es'
   const supabase = createClient()
+  
+  // Guard to prevent double execution in React Strict Mode (Dev)
+  const isExecuting = useRef(false)
 
   useEffect(() => {
-    const handleAuth = async () => {
-      const code = searchParams.get('code')
-      const next = searchParams.get('next') ?? `/${locale}/dashboard`
-      
-      console.log('Auth Callback - Code:', code ? 'Present' : 'Missing')
-      console.log('Auth Callback - Next:', next)
-      console.log('Auth Callback - Hash:', window.location.hash ? 'Present' : 'Missing')
+    if (isExecuting.current) return
+    isExecuting.current = true
 
+    const handleAuth = async () => {
+      // 1) Contexto básico y normalización de 'next'
+      const rawNext = searchParams.get('next')
+      const code = searchParams.get('code')
+      let type = searchParams.get('type')
+
+      // Normalizamos el parámetro 'next' para evitar vulnerabilidades de Open-Redirect
+      // y asegurar que siempre sea una ruta interna válida.
+      let next = `/${locale}/dashboard`
+      if (rawNext && rawNext.trim() !== '') {
+        if (rawNext.startsWith('http') || rawNext.startsWith('//')) {
+          // Ignoramos URLs externas completas por seguridad
+          next = `/${locale}/dashboard`
+        } else {
+          // Aseguramos que siempre empiece con una barra /
+          next = rawNext.startsWith('/') ? rawNext : `/${rawNext}`
+        }
+      }
+
+      // 2) PKCE Flow: detection de ?code=...
       if (code) {
-        // Handle PKCE (code from query)
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (error) {
-          console.error('Code exchange error:', error)
+          console.error('[AUTH-CALLBACK] Code exchange error:', error)
           router.replace(`/${locale}/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
           return
         }
       }
 
-      // Extract the type from query params (passed by our route handler)
-      let type = searchParams.get('type')
+      // 3) Implicit Flow: detección de #access_token=...
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
 
-      // Parse hash fragment mechanically to support Supabase Magic Links & Invites
-      const hash = window.location.hash
-      if (hash) {
-        const hashParams = new URLSearchParams(hash.substring(1))
-        
-        // If Supabase returned an error in the hash (e.g., link expired)
-        if (hashParams.get('error')) {
-          const errorDesc = hashParams.get('error_description') || hashParams.get('error') || 'Error desconocido'
-          router.replace(`/${locale}/auth/auth-code-error?error=${encodeURIComponent(errorDesc)}`)
+        const hashError = hashParams.get('error') || hashParams.get('error_description')
+        if (hashError) {
+          console.error('[AUTH-CALLBACK] Hash error:', hashError)
+          router.replace(`/${locale}/auth/auth-code-error?error=${encodeURIComponent(hashError)}`)
           return
         }
 
-        if (hashParams.get('type')) {
-          type = hashParams.get('type')
-        }
-      }
+        const hashType = hashParams.get('type')
+        if (hashType) type = hashType
 
-      // We set up an observer to catch the session the moment the client processes the hash
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
-            router.replace(`/${locale}/set-password?uid=${session.user.id}`)
-          } else {
-            router.replace(next)
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+
+          if (error) {
+            console.error('[AUTH-CALLBACK] setSession error:', error)
+            router.replace(`/${locale}/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
+            return
           }
-        }
-      })
 
-      // Check manually in case it already processed before we attached the listener
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session) {
-        if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
-          router.replace(`/${locale}/set-password?uid=${session.user.id}`)
-          return
-        }
-        router.replace(next)
-      } else {
-        if (!hash && !code) {
-           router.replace(`/${locale}/auth/auth-code-error?error=no_session_found`)
-        } else {
-           // Fallback safety timeout
-          setTimeout(async () => {
-             const { data: { session: retrySession } } = await supabase.auth.getSession()
-             if (retrySession) {
-               if (type === 'recovery' || type === 'invite' || next.includes('set-password')) {
-                 router.replace(`/${locale}/set-password?uid=${retrySession.user.id}`)
-               } else {
-                 router.replace(next)
-               }
-             } else {
-               router.replace(`/${locale}/auth/auth-code-error?error=session_sync_timeout`)
-             }
-          }, 3000)
+          window.history.replaceState(
+            {}, 
+            document.title, 
+            window.location.pathname + window.location.search
+          )
         }
       }
 
-      // Cleanup listener if component unmounts quickly
-      return () => {
-        subscription.unsubscribe()
+      // 4) Confirmación final de la sesión
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError) {
+        console.error('[AUTH-CALLBACK] getSession error:', sessionError)
+        router.replace(`/${locale}/auth/auth-code-error?error=${encodeURIComponent(sessionError.message)}`)
+        return
+      }
+
+      if (!session) {
+        console.warn('[AUTH-CALLBACK] No session found after processing')
+        router.replace(`/${locale}/auth/auth-code-error?error=no_session_found`)
+        return
+      }
+
+      // 5) Redirección final
+      const isSpecialFlow = type === 'recovery' || type === 'invite' || next.includes('set-password')
+
+      if (isSpecialFlow) {
+        router.replace(`/${locale}/set-password?uid=${session.user.id}`)
+      } else {
+        router.replace(next)
       }
     }
 
     handleAuth()
-  }, [searchParams, locale, router, supabase.auth])
+  }, [searchParams, locale, router])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
