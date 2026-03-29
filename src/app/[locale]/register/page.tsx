@@ -1,38 +1,47 @@
-import Link from 'next/link'
-import { headers } from 'next/headers'
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
-import SubmitButton from '@/components/ui/SubmitButton'
-import { Mail, ArrowLeft, CheckCircle2, AlertTriangle } from 'lucide-react'
+'use client'
 
-export default async function Register({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>
-  searchParams: Promise<{ message?: string; error?: string; success?: string; email?: string }>
-}) {
-  const { locale } = await params
-  const { message, error, success, email: savedEmail } = await searchParams
-  const t = await getTranslations('Register')
+import Link from 'next/link'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import SubmitButton from '@/components/ui/SubmitButton'
+import { Mail, ArrowLeft, CheckCircle2, AlertTriangle, KeyRound, Eye, EyeOff, User, Building } from 'lucide-react'
+import { useState } from 'react'
+
+export default function Register() {
+  const router = useRouter()
+  const params = useParams()
+  const searchParams = useSearchParams()
+  const locale = (params?.locale as string) || 'es'
+  
+  const message = searchParams.get('message')
+  const errorParam = searchParams.get('error')
+  const success = searchParams.get('success')
+  const savedEmail = searchParams.get('email')
+  
+  const t = useTranslations('Register')
+  
+  const [showPassword, setShowPassword] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
   const signUp = async (formData: FormData) => {
-    'use server'
-
-    const origin = (await headers()).get('origin')
+    setLocalError(null)
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const businessName = formData.get('business_name') as string
     const fullName = formData.get('full_name') as string
-    
-    const supabase = await createClient()
 
-    const { data, error: authError } = await supabase.auth.signUp({
+    if (password.length < 8) {
+      setLocalError(locale === 'es' ? 'La contraseña debe tener al menos 8 caracteres.' : 'Password must be at least 8 characters.')
+      return
+    }
+
+    const supabase = createClient()
+    const { error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${origin}/${locale}/auth/confirm?next=/${locale}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/${locale}/auth/confirm?next=/${locale}/dashboard`,
         data: {
           full_name: fullName,
           business_name: businessName,
@@ -42,38 +51,40 @@ export default async function Register({
     })
 
     if (authError) {
-      return redirect(`/${locale}/register?error=${encodeURIComponent(authError.message)}`)
+      router.push(`/${locale}/register?error=${encodeURIComponent(authError.message)}`)
+      return
     }
 
-    // Redirect to the same page but showing success screen
-    return redirect(`/${locale}/register?success=true&email=${encodeURIComponent(email)}`)
+    router.push(`/${locale}/register?success=true&email=${encodeURIComponent(email)}`)
   }
 
   const resendEmail = async (formData: FormData) => {
-    'use server'
     const email = formData.get('email') as string
-    const origin = (await headers()).get('origin')
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { error: resendError } = await supabase.auth.resend({
       type: 'signup',
       email,
       options: {
-        emailRedirectTo: `${origin}/${locale}/auth/confirm?next=/${locale}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/${locale}/auth/confirm?next=/${locale}/dashboard`,
       }
     })
 
     if (resendError) {
-       return redirect(`/${locale}/register?success=true&email=${encodeURIComponent(email)}&error=${encodeURIComponent(resendError.message)}`)
+       router.push(`/${locale}/register?success=true&email=${encodeURIComponent(email)}&error=${encodeURIComponent(resendError.message)}`)
+       return
     }
 
     const successMsg = locale === 'es' ? 'Email reenviado correctamente. Revisa también tu carpeta de SPAM.' : 'Email resent successfully. Please also check your SPAM folder.'
-    return redirect(`/${locale}/register?success=true&email=${encodeURIComponent(email)}&message=${encodeURIComponent(successMsg)}`)
+    router.push(`/${locale}/register?success=true&email=${encodeURIComponent(email)}&message=${encodeURIComponent(successMsg)}`)
   }
+
+  const inputClass = "block w-full rounded-xl border-0 py-3 px-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm bg-slate-50/50 transition-all"
+  const labelClass = "block text-sm font-semibold text-slate-700 mb-2"
 
   if (success === 'true' && savedEmail) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 text-center space-y-6">
           <div className="mx-auto w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-6">
             <Mail className="w-8 h-8 text-emerald-500" />
@@ -97,15 +108,9 @@ export default async function Register({
             </p>
           </div>
 
-          {message && (
-            <div className="bg-emerald-50 text-emerald-700 p-3 rounded-lg text-sm border border-emerald-200">
-              {decodeURIComponent(message)}
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-rose-50 text-rose-700 p-3 rounded-lg text-sm border border-rose-200">
-              {decodeURIComponent(error)}
+          {(message || errorParam) && (
+            <div className={`p-3 rounded-lg text-sm border ${errorParam ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+              {decodeURIComponent((message || errorParam) as string)}
             </div>
           )}
 
@@ -133,54 +138,92 @@ export default async function Register({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
         <Link
           href="/"
           className="inline-flex py-2 px-4 rounded-md no-underline text-slate-600 hover:text-slate-900 flex items-center group text-sm mb-6 font-medium"
         >
           <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Back
+          {locale === 'es' ? 'Volver' : 'Back'}
         </Link>
 
         <form
-          className="flex flex-col w-full gap-2"
+          className="flex flex-col w-full gap-5"
           action={signUp}
         >
-          <h2 className="text-3xl font-bold mb-6 text-center text-slate-900">{t('title')}</h2>
+          <h2 className="text-3xl font-bold mb-2 text-center text-slate-900">{t('title')}</h2>
+          <p className="text-center text-slate-500 text-sm mb-4">Crea tu cuenta profesional ahora</p>
           
-          <label className="text-sm font-semibold text-slate-700 mb-2" htmlFor="full_name">{t('fullName')}</label>
-          <input className="rounded-lg px-4 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 mb-4" name="full_name" placeholder={t('fullNamePlaceholder')} required />
+          <div>
+            <label className={labelClass} htmlFor="full_name">{t('fullName')}</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <User className="w-4 h-4 text-slate-400" />
+              </div>
+              <input className={`${inputClass} pl-11`} name="full_name" placeholder={t('fullNamePlaceholder')} required />
+            </div>
+          </div>
 
-          <label className="text-sm font-semibold text-slate-700 mb-2" htmlFor="business_name">{t('businessName')}</label>
-          <input className="rounded-lg px-4 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 mb-4" name="business_name" placeholder={t('businessNamePlaceholder')} required />
+          <div>
+            <label className={labelClass} htmlFor="business_name">{t('businessName')}</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Building className="w-4 h-4 text-slate-400" />
+              </div>
+              <input className={`${inputClass} pl-11`} name="business_name" placeholder={t('businessNamePlaceholder')} required />
+            </div>
+          </div>
 
-          <label className="text-sm font-semibold text-slate-700 mb-2" htmlFor="email">{t('email')}</label>
-          <input className="rounded-lg px-4 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 mb-4" name="email" placeholder={t('emailPlaceholder')} required />
+          <div>
+            <label className={labelClass} htmlFor="email">{t('email')}</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Mail className="w-4 h-4 text-slate-400" />
+              </div>
+              <input className={`${inputClass} pl-11`} name="email" type="email" placeholder={t('emailPlaceholder')} required />
+            </div>
+          </div>
       
-          <label className="text-sm font-semibold text-slate-700 mb-2" htmlFor="password">{t('password')}</label>
-          <input className="rounded-lg px-4 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 mb-6" type="password" name="password" placeholder={t('passwordPlaceholder')} required />
+          <div>
+            <label className={labelClass} htmlFor="password">{t('password')}</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <KeyRound className="w-4 h-4 text-slate-400" />
+              </div>
+              <input 
+                className={`${inputClass} pl-11 pr-11`} 
+                type={showPassword ? 'text' : 'password'} 
+                name="password" 
+                placeholder={t('passwordPlaceholder')} 
+                required 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1.5 ml-1">Mínimo 8 caracteres</p>
+          </div>
       
+          {(errorParam || localError) && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700">
+              {localError || decodeURIComponent(errorParam as string)}
+            </div>
+          )}
+
           <SubmitButton
-            className="w-full mb-4"
+            className="w-full mt-2"
             loadingText={locale === 'es' ? 'Creando cuenta...' : 'Creating account...'}
+            icon={<CheckCircle2 className="w-4 h-4" />}
           >
             {t('signUp')}
           </SubmitButton>
-
-          {error && (
-            <div className={`mt-4 p-4 text-center text-sm border-l-4 rounded bg-red-50 text-red-700 border-red-500`}>
-              {decodeURIComponent(error)}
-            </div>
-          )}
-
-          {message && !error && (
-            <div className={`mt-4 p-4 text-center text-sm border-l-4 rounded bg-emerald-50 text-emerald-700 border-emerald-500`}>
-              {decodeURIComponent(message)}
-            </div>
-          )}
           
-          <div className="mt-4 text-center text-sm text-slate-600">
+          <div className="text-center text-sm text-slate-600">
             {t('alreadyAccount')}{' '}
             <Link href="/login" className="text-indigo-600 font-semibold hover:text-indigo-700">
               {t('signInHere')}

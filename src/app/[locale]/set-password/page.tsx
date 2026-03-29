@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { KeyRound, Eye, EyeOff, CheckCircle2, ShieldCheck } from 'lucide-react'
+import SubmitButton from '@/components/ui/SubmitButton'
 
 export default function SetPasswordPage() {
   const router = useRouter()
@@ -176,14 +177,13 @@ export default function SetPasswordPage() {
             )}
 
             {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none mt-2"
+            <SubmitButton
+              className="w-full mt-2"
+              loadingText={locale === 'es' ? 'Guardando...' : 'Saving...'}
+              icon={<CheckCircle2 className="w-4 h-4" />}
             >
-              <CheckCircle2 className="w-4 h-4" />
-              {loading ? (locale === 'es' ? 'Guardando...' : 'Saving...') : (locale === 'es' ? 'Guardar contraseña y acceder' : 'Save password and access')}
-            </button>
+              {locale === 'es' ? 'Guardar contraseña y acceder' : 'Save password and access'}
+            </SubmitButton>
           </form>
         </div>
 
