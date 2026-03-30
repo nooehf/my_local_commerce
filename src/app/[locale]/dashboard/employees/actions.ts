@@ -1,3 +1,3 @@
 'use server'
 
-export * from '../team/actions'
+export * from '@/lib/team/actions'

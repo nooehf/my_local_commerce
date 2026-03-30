@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { ArrowLeft, Loader2, Camera } from 'lucide-react'
-import { inviteWorkerAction } from '../actions'
+import { inviteWorkerAction } from '@/lib/team/actions'
 import { useLocale } from 'next-intl'
 
 export default function NewTeamMemberPage() {
