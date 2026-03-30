@@ -57,7 +57,7 @@ export default async function EmployeeDetailPage({
       {/* Breadcrumbs / Back */}
       <div className="flex items-center gap-4">
         <Link 
-          href={`/${locale}/dashboard/team`}
+          href="/dashboard/team"
           className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500 flex items-center justify-center border border-slate-200 active:scale-95"
           title="Volver"
         >

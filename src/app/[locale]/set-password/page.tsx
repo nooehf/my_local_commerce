@@ -73,16 +73,19 @@ export default function SetPasswordPage() {
       .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
       .single()
 
-    if (profile?.role === 'employee') {
-      // Import activation action from Team module
+    // BUG FIX 2: Robusta activación de empleado (best-effort)
+    try {
       const { activateEmployeeAction } = await import('@/lib/team/actions')
       await activateEmployeeAction()
+    } catch (err) {
+      console.warn('[AUTH] Error en activación automática de empleado:', err)
     }
 
-    if (profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'employee') {
-      router.push(`/${locale}/dashboard`)
-    } else {
+    if (profile?.role === 'customer') {
       router.push(`/${locale}/customer`)
+    } else {
+      // Default to dashboard for admin, super_admin, employee or if role is unknown/null
+      router.push(`/${locale}/dashboard`)
     }
   }
 
