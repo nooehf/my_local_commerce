@@ -101,8 +101,8 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${employee.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
-                          : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
+                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
                         }`}>
                         {employee.status === 'active' ? t('active') : t('invited')}
                       </span>
