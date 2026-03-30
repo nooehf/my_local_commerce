@@ -83,6 +83,7 @@
     "tasks": "Tasks",
     "settings": "Settings",
     "businessName": "My Local Commerce",
+    "team": "Team",
     "owner": "Owner",
     "logout": "Sign Out",
     "map": "Businesses",
@@ -114,5 +115,54 @@
   "Customers": {
     "status_invited": "Invited",
     "status_active": "Active"
+  },
+  "Team": {
+    "title": "Team",
+    "subtitle": "Manage your business professionals, their skills, and schedules.",
+    "newEmployee": "New Employee",
+    "noEmployees": "No workers yet",
+    "noEmployeesDesc": "Start by inviting your team members to manage the business.",
+    "firstInvite": "Send first invitation",
+    "name": "Name",
+    "status": "Status",
+    "email": "Email",
+    "phone": "Phone",
+    "services": "Services",
+    "shifts": "Shifts",
+    "actions": "Actions",
+    "active": "Active",
+    "invited": "Invited (Pending)",
+    "details": "View Details",
+    "tabs": {
+      "services": "Services (Skills)",
+      "shifts": "Schedules & Shifts"
+    },
+    "servicesTab": {
+      "title": "Assigned Services",
+      "subtitle": "Define which services this employee can perform and adjust prices or duration if needed.",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "override": "Personalize",
+      "default": "Default",
+      "duration": "min",
+      "price": "Price",
+      "saveOverride": "Save changes",
+      "cancel": "Cancel"
+    },
+    "shiftsTab": {
+      "title": "Shift Management",
+      "subtitle": "Plan work hours and breaks.",
+      "newShift": "New Shift",
+      "noShifts": "No shifts scheduled",
+      "start": "Start",
+      "end": "End",
+      "type": "Type",
+      "notes": "Notes",
+      "work": "Work",
+      "break": "Break",
+      "time_off": "Time Off",
+      "deleteConfirm": "Delete this shift?",
+      "errorTime": "End time must be after start time"
+    }
   }
 }

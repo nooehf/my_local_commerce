@@ -25,7 +25,7 @@ const navigation = [
   { key: 'reservations', href: '/dashboard/reservations', icon: CalendarDays },
   { key: 'customers', href: '/dashboard/customers', icon: Users },
   { key: 'services', href: '/dashboard/services', icon: Briefcase },
-  { key: 'employees', href: '/dashboard/employees', icon: UsersRound },
+  { key: 'team', href: '/dashboard/team', icon: UsersRound },
   { key: 'shifts', href: '/dashboard/shifts', icon: Clock },
   { key: 'inventory', href: '/dashboard/inventory', icon: Package },
   { key: 'tasks', href: '/dashboard/tasks', icon: CheckSquare },
@@ -113,7 +113,7 @@ export default function Sidebar({
           .filter(item => {
             if (userRole === 'employee') {
               // Restricted items for workers
-              const restricted = ['employees', 'shifts', 'services', 'settings']
+              const restricted = ['team', 'shifts', 'services', 'settings']
               return !restricted.includes(item.key)
             }
             return true

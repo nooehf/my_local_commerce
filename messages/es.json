@@ -83,6 +83,7 @@
     "tasks": "Tareas",
     "settings": "Configuración",
     "businessName": "My Local Commerce",
+    "team": "Equipo",
     "owner": "Dueño",
     "logout": "Cerrar Sesión",
     "map": "Negocios",
@@ -114,5 +115,54 @@
   "Customers": {
     "status_invited": "Invitado",
     "status_active": "Activo"
+  },
+  "Team": {
+    "title": "Equipo",
+    "subtitle": "Gestiona los profesionales de tu negocio, sus habilidades y horarios.",
+    "newEmployee": "Nuevo Empleado",
+    "noEmployees": "Sin trabajadores aún",
+    "noEmployeesDesc": "Empieza invitando a los miembros de tu equipo para gestionar el negocio.",
+    "firstInvite": "Enviar primera invitación",
+    "name": "Nombre",
+    "status": "Estado",
+    "email": "Email",
+    "phone": "Teléfono",
+    "services": "Servicios",
+    "shifts": "Turnos",
+    "actions": "Acciones",
+    "active": "Activo",
+    "invited": "Invitado (Pendiente)",
+    "details": "Ver Detalles",
+    "tabs": {
+      "services": "Servicios (Skills)",
+      "shifts": "Horarios y Turnos"
+    },
+    "servicesTab": {
+      "title": "Servicios Asignados",
+      "subtitle": "Define qué servicios puede realizar este empleado y ajusta precios o duración si es necesario.",
+      "assign": "Asignar",
+      "unassign": "Desasignar",
+      "override": "Personalizar",
+      "default": "Por defecto",
+      "duration": "min",
+      "price": "Precio",
+      "saveOverride": "Guardar cambios",
+      "cancel": "Cancelar"
+    },
+    "shiftsTab": {
+      "title": "Gestión de Turnos",
+      "subtitle": "Planifica el horario de trabajo y descansos.",
+      "newShift": "Nuevo Turno",
+      "noShifts": "No hay turnos programados",
+      "start": "Inicio",
+      "end": "Fin",
+      "type": "Tipo",
+      "notes": "Notas",
+      "work": "Trabajo",
+      "break": "Descanso",
+      "time_off": "Tiempo libre",
+      "deleteConfirm": "¿Eliminar este turno?",
+      "errorTime": "La hora de fin debe ser posterior a la de inicio"
+    }
   }
 }
