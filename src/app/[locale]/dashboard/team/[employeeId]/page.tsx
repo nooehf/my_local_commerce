@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { Link } from '@/i18n/routing'
+import { Link, redirect } from '@/i18n/routing'
 import { ChevronLeft, Mail, Phone, Briefcase, Clock } from 'lucide-react'
 import { getEmployeeDetail } from '@/lib/team/actions'
 import ServicesTab from './components/ServicesTab'
@@ -11,16 +11,23 @@ export default async function EmployeeDetailPage({
   params,
   searchParams
 }: { 
-  params: { locale: string, employeeId: string },
-  searchParams: { tab?: string }
+  params: Promise<{ locale: string, employeeId: string }>,
+  searchParams: Promise<{ tab?: string }>
 }) {
-  const { locale, employeeId } = params
-  const { tab = 'services' } = searchParams
+  const { locale, employeeId } = await params
+  const { tab = 'services' } = await searchParams
   const t = await getTranslations('Team')
-  
+
+  // -- DEFENSIVE GUARD: Validate UUID --
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!employeeId || employeeId === 'undefined' || !uuidRegex.test(employeeId)) {
+    console.error(`[TEAM] Invalid employeeId detected: "${employeeId}". Redirecting...`)
+    return redirect({ href: '/dashboard/team', locale })
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return redirect(`/${locale}/login`)
+  if (!user) return redirect({ href: '/login', locale })
 
   // Admin Guard (Strict)
   const { data: profile } = await supabase
@@ -29,8 +36,8 @@ export default async function EmployeeDetailPage({
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') {
-    return redirect(`/${locale}/dashboard`)
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+    return redirect({ href: '/dashboard', locale })
   }
 
   const { data: employee, error: fetchError } = await getEmployeeDetail(employeeId)

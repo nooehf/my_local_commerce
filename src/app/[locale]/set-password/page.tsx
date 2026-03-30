@@ -74,6 +74,7 @@ export default function SetPasswordPage() {
       .single()
 
     if (profile?.role === 'employee') {
+      // Import activation action from Team module
       const { activateEmployeeAction } = await import('../dashboard/team/actions')
       await activateEmployeeAction()
     }

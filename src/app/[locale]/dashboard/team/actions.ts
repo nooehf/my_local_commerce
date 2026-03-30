@@ -310,6 +310,7 @@ export async function inviteWorkerAction(formData: FormData, locale?: string) {
   const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
     data: {
       full_name: `${firstName} ${lastName}`.trim(),
+      role: 'employee',
       business_id: adminProfile.business_id,
       first_name: firstName,
       last_name: lastName,
