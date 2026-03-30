@@ -1,27 +1,26 @@
 import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { Link } from '@/i18n/routing'
+import { Link, redirect } from '@/i18n/routing'
 import { Plus, UsersRound, Mail, ChevronRight } from 'lucide-react'
 import { getTeamMembers } from '@/lib/team/actions'
 
-export default async function TeamPage({ params }: { params: { locale: string } }) {
-  const { locale } = params
+export default async function TeamPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const t = await getTranslations('Team')
   
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return redirect(`/${locale}/login`)
+  if (!user) return redirect({ href: '/login', locale: locale })
 
-  // Admin Guard (Strict)
+  // Admin Guard (Strict: admin or super_admin allowed)
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') {
-    return redirect(`/${locale}/dashboard`)
+  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+    return redirect({ href: '/dashboard', locale })
   }
 
   // Fetch team members using the server action (which validates business_id and role)
@@ -44,7 +43,7 @@ export default async function TeamPage({ params }: { params: { locale: string } 
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0">
           <Link
-            href={`/${locale}/dashboard/employees/new`}
+            href="/dashboard/team/new"
             className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-all active:scale-95"
           >
             <Plus className="-ml-0.5 mr-1.5 h-4 w-4" />
@@ -63,7 +62,7 @@ export default async function TeamPage({ params }: { params: { locale: string } 
             {t('noEmployeesDesc')}
           </p>
           <Link
-            href={`/${locale}/dashboard/employees/new`}
+            href="/dashboard/team/new"
             className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
           >
             <Plus className="h-4 w-4" />
@@ -117,7 +116,7 @@ export default async function TeamPage({ params }: { params: { locale: string } 
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link
-                        href={`/${locale}/dashboard/team/${employee.id}`}
+                        href={`/dashboard/team/${employee.id}`}
                         className="inline-flex items-center gap-1 text-indigo-600 font-semibold text-sm hover:text-indigo-700 transition-all group-hover:translate-x-0.5 active:scale-95"
                       >
                         {t('details')}
