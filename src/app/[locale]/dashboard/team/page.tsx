@@ -7,7 +7,7 @@ import { getTeamMembers } from '@/lib/team/actions'
 export default async function TeamPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   const t = await getTranslations('Team')
-  
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return redirect({ href: '/login', locale: locale })
@@ -100,11 +100,10 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${
-                        employee.status === 'active'
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${employee.status === 'active'
                           ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
                           : 'bg-amber-50 text-amber-700 ring-amber-600/20'
-                      }`}>
+                        }`}>
                         {employee.status === 'active' ? t('active') : t('invited')}
                       </span>
                     </td>

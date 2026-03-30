@@ -379,18 +379,43 @@ export async function inviteWorkerAction(formData: FormData, locale?: string) {
   return { success: true }
 }
 
-export async function activateEmployeeAction() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'No autorizado' }
+export async function activateEmployeeAction(): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'No autorizado' }
 
-  const { error } = await supabase
-    .from('employees')
-    .update({ status: 'active' })
-    .eq('profile_id', user.id)
+    // 1. Try updating by profile_id
+    const { data, error } = await supabase
+      .from('employees')
+      .update({ status: 'active' })
+      .eq('profile_id', user.id)
+      .select('id')
 
-  if (error) return { error: error.message }
-  return { success: true }
+    if (error) throw error
+
+    // 2. Fallback: If no rows updated, try by email and repair profile_id
+    if (!data || data.length === 0) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('employees')
+        .update({ 
+          status: 'active',
+          profile_id: user.id
+        })
+        .eq('email', user.email)
+        .select('id')
+
+      if (fallbackError) throw fallbackError
+      if (!fallbackData || fallbackData.length === 0) {
+        return { error: 'No se encontró el registro de empleado para activar.' }
+      }
+    }
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('[TEAM] Error activating employee:', err)
+    return { error: err.message || 'Error desconocido al activar empleado' }
+  }
 }
 
 export async function deleteEmployeeAction(employeeId: string, locale?: string) {
