@@ -17,7 +17,7 @@
     "password": "Contraseña",
     "passwordPlaceholder": "••••••••",
     "signIn": "Iniciar Sesión",
-    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "forgotPassword": "¿Olvilaste tu contraseña?",
     "noAccount": "¿No tienes cuenta?",
     "registerHere": "Regístrate aquí"
   },
@@ -164,5 +164,46 @@
       "deleteConfirm": "¿Eliminar este turno?",
       "errorTime": "La hora de fin debe ser posterior a la de inicio"
     }
+  },
+  "BusinessSettings": {
+    "hoursTitle": "Horario de Apertura",
+    "hoursSubtitle": "Define cuándo está abierto tu negocio al público.",
+    "day": "Día",
+    "status": "Estado",
+    "open": "Abre",
+    "close": "Cierra",
+    "opened": "Abierto",
+    "closed": "Cerrado",
+    "saveSuccess": "Horario actualizado correctamente",
+    "saveError": "Error al actualizar el horario",
+    "days": {
+      "0": "Domingo",
+      "1": "Lunes",
+      "2": "Martes",
+      "3": "Miércoles",
+      "4": "Jueves",
+      "5": "Viernes",
+      "6": "Sábado"
+    }
+  },
+  "BusinessExceptions": {
+    "title": "Días Especiales y Festivos",
+    "subtitle": "Configura excepciones para fechas concretas, como festivos o vacaciones.",
+    "addException": "Añadir Día Especial",
+    "noExceptions": "No hay excepciones configuradas",
+    "date": "Fecha",
+    "reason": "Motivo",
+    "reasonPlaceholder": "Navidad, Festivo local...",
+    "deleteConfirm": "¿Eliminar esta excepción y volver al horario habitual?",
+    "saveSuccess": "Día especial guardado con éxito",
+    "saveError": "Error al guardar el día especial"
+  },
+  "CalendarModal": {
+    "trigger": "Vista Previa Calendario",
+    "title": "Horario Visual",
+    "open": "Abierto",
+    "closed": "Cerrado",
+    "exception": "Excepción",
+    "help": "Este calendario combina tu horario semanal con los cierres especiales que hayas configurado por fecha."
   }
 }

@@ -164,5 +164,46 @@
       "deleteConfirm": "Delete this shift?",
       "errorTime": "End time must be after start time"
     }
+  },
+  "BusinessSettings": {
+    "hoursTitle": "Opening Hours",
+    "hoursSubtitle": "Define when your business is open to the public.",
+    "day": "Day",
+    "status": "Status",
+    "open": "Open",
+    "close": "Close",
+    "opened": "Opened",
+    "closed": "Closed",
+    "saveSuccess": "Hours updated successfully",
+    "saveError": "Error updating hours",
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  },
+  "BusinessExceptions": {
+    "title": "Special Days & Holidays",
+    "subtitle": "Configure exceptions for specific dates, like holidays or vacations.",
+    "addException": "Add Special Date",
+    "noExceptions": "No exceptions configured",
+    "date": "Date",
+    "reason": "Reason",
+    "reasonPlaceholder": "Christmas, Local Holiday...",
+    "deleteConfirm": "Delete this exception and revert to standard hours?",
+    "saveSuccess": "Special date saved successfully",
+    "saveError": "Error saving special date"
+  },
+  "CalendarModal": {
+    "trigger": "Preview Calendar",
+    "title": "Visual Schedule",
+    "open": "Open",
+    "closed": "Closed",
+    "exception": "Exception",
+    "help": "This calendar combines your weekly schedule with special closures you've configured by date."
   }
 }

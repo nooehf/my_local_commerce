@@ -1,7 +1,11 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import BusinessDataForm from '@/components/dashboard/BusinessDataForm'
-import { CreditCard, Store } from 'lucide-react'
+import BusinessHoursForm from '@/components/dashboard/BusinessHoursForm'
+import BusinessExceptionsManager from '@/components/dashboard/BusinessExceptionsManager'
+import BusinessScheduleModal from '@/components/dashboard/BusinessScheduleModal'
+import { CreditCard, Store, Clock, Calendar } from 'lucide-react'
+import { getBusinessHoursAction, getBusinessExceptionsAction } from '@/lib/settings/actions'
 
 export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
   const supabase = await createClient()
@@ -25,6 +29,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     .eq('id', profile?.business_id)
     .single()
 
+  const { data: businessHours } = await getBusinessHoursAction()
+  const { data: businessExceptions } = await getBusinessExceptionsAction()
+  const locale = (await params).locale
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
@@ -47,6 +55,38 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
           ) : (
             <p className="text-sm text-slate-400">No se encontró el negocio asociado a tu cuenta.</p>
           )}
+        </div>
+      </div>
+
+      {/* Business Hours */}
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200">
+        <div className="border-b border-slate-100 px-6 py-5 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-indigo-500" />
+              Horario de Apertura
+            </h3>
+            <p className="text-sm text-slate-500 mt-0.5">Configura los días y horas en los que tu negocio está abierto.</p>
+          </div>
+          <BusinessScheduleModal 
+            standardHours={businessHours || []} 
+            exceptions={businessExceptions || []} 
+            locale={locale} 
+          />
+        </div>
+        <div className="px-6 py-8">
+          <BusinessHoursForm 
+            initialHours={businessHours || []} 
+            initialExceptions={businessExceptions || []}
+            locale={locale} 
+          />
+        </div>
+      </div>
+
+      {/* Business Exceptions */}
+      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-slate-200">
+        <div className="px-6 py-8">
+          <BusinessExceptionsManager initialExceptions={businessExceptions || []} locale={locale} />
         </div>
       </div>
 
