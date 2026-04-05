@@ -26,7 +26,6 @@ const navigation = [
   { key: 'customers', href: '/dashboard/customers', icon: Users },
   { key: 'services', href: '/dashboard/services', icon: Briefcase },
   { key: 'team', href: '/dashboard/team', icon: UsersRound },
-  { key: 'shifts', href: '/dashboard/shifts', icon: Clock },
   { key: 'inventory', href: '/dashboard/inventory', icon: Package },
   { key: 'tasks', href: '/dashboard/tasks', icon: CheckSquare },
   { key: 'settings', href: '/dashboard/settings', icon: Settings },
