@@ -1,4 +1,4 @@
-import { ArrowRight, Calendar, Users, BarChart } from "lucide-react";
+import { ArrowRight, Calendar, Users, BarChart, Heart, Package, Gift, Megaphone } from "lucide-react";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import MobileMenu from "@/components/MobileMenu";
 import PublicNavbar from "@/components/PublicNavbar";
@@ -30,34 +30,66 @@ export default function Home() {
         </section>
 
         <section id="features" className="container mx-auto px-4 md:px-6 py-16 md:py-24 mt-4 md:mt-12">
-          <div className="grid md:grid-cols-3 gap-6 md:gap-12">
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-6">
-                <Calendar className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+            {[
+              {
+                icon: Calendar,
+                title: t("features.reservationsTitle"),
+                desc: t("features.reservationsDesc"),
+                color: "bg-indigo-50 text-indigo-600",
+              },
+              {
+                icon: Heart,
+                title: t("features.loyaltyTitle"),
+                desc: t("features.loyaltyDesc"),
+                color: "bg-violet-50 text-violet-600",
+              },
+              {
+                icon: BarChart,
+                title: t("features.analyticsTitle"),
+                desc: t("features.analyticsDesc"),
+                color: "bg-emerald-50 text-emerald-600",
+              },
+              {
+                icon: Package,
+                title: t("features.inventoryTitle"),
+                desc: t("features.inventoryDesc"),
+                color: "bg-amber-50 text-amber-600"
+              },
+              {
+                icon: Users,
+                title: t("features.teamTitle"),
+                desc: t("features.teamDesc"),
+                color: "bg-blue-50 text-blue-600"
+              },
+              {
+                icon: Gift,
+                title: t("features.loyaltyColabTitle"),
+                desc: t("features.loyaltyColabDesc"),
+                color: "bg-rose-50 text-rose-600"
+              },
+              {
+                icon: Megaphone,
+                title: t("features.marketplaceTitle"),
+                desc: t("features.marketplaceDesc"),
+                color: "bg-sky-50 text-sky-600"
+              }
+            ].map((feature, i) => (
+              <div 
+                key={i} 
+                className={`bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow ${
+                  i === 6 ? 'lg:col-start-2' : ''
+                }`}
+              >
+                <div className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-6`}>
+                  <feature.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-slate-900">{feature.title}</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {feature.desc}
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900">{t("features.reservationsTitle")}</h3>
-              <p className="text-slate-600 leading-relaxed">
-                {t("features.reservationsDesc")}
-              </p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-              <div className="w-12 h-12 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center mb-6">
-                <Users className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900">{t("features.loyaltyTitle")}</h3>
-              <p className="text-slate-600 leading-relaxed">
-                {t("features.loyaltyDesc")}
-              </p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6">
-                <BarChart className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-900">{t("features.analyticsTitle")}</h3>
-              <p className="text-slate-600 leading-relaxed">
-                {t("features.analyticsDesc")}
-              </p>
-            </div>
+            ))}
           </div>
         </section>
 

@@ -53,7 +53,15 @@
       "loyaltyTitle": "Fidelización de Clientes",
       "loyaltyDesc": "Convierte visitantes en clientes habituales. Registra el historial, preferencias y recompensa la lealtad automáticamente.",
       "analyticsTitle": "Analítica Simple",
-      "analyticsDesc": "Entiende tus ingresos, horas punta y mejores servicios de un vistazo sin ser un experto en datos."
+      "analyticsDesc": "Entiende tus ingresos, horas punta y mejores servicios de un vistazo sin ser un experto en datos.",
+      "inventoryTitle": "Control de Inventario",
+      "inventoryDesc": "Gestiona tu stock en tiempo real, evita roturas y automatiza tus pedidos desde una sola pantalla.",
+      "teamTitle": "Gestión de Equipo",
+      "teamDesc": "Sincroniza turnos, horarios y comunicación con tus empleados para eliminar el caos operativo.",
+      "loyaltyColabTitle": "Fidelización Colaborativa",
+      "loyaltyColabDesc": "La joya de la corona: tus clientes acumulan puntos que circulan entre todos los negocios de la red.",
+      "marketplaceTitle": "Marketplace Local",
+      "marketplaceDesc": "No solo gestionas, te descubren. Posiciona tu negocio en el radar de todos los clientes de tu zona."
     },
     "footerSubtitle": "Empoderando la economía del barrio.",
     "footerRights": "Todos los derechos reservados."

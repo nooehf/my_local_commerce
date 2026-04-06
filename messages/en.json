@@ -53,7 +53,15 @@
       "loyaltyTitle": "Customer Loyalty",
       "loyaltyDesc": "Turn first-time visitors into regulars. Track history, preferences, and reward loyalty automatically.",
       "analyticsTitle": "Simple Analytics",
-      "analyticsDesc": "Understand your revenue, busy hours, and top services at a glance without being a data expert."
+      "analyticsDesc": "Understand your revenue, busy hours, and top services at a glance without being a data expert.",
+      "inventoryTitle": "Inventory Control",
+      "inventoryDesc": "Manage your stock in real-time, avoid stockouts, and automate your orders from a single screen.",
+      "teamTitle": "Team Management",
+      "teamDesc": "Synchronize shifts, schedules, and communication with your employees to eliminate operational chaos.",
+      "loyaltyColabTitle": "Collaborative Loyalty",
+      "loyaltyColabDesc": "The crown jewel: your customers accumulate points that circulate among all businesses in the network.",
+      "marketplaceTitle": "Local Marketplace",
+      "marketplaceDesc": "Not only do you manage, you get discovered. Position your business on the radar of all customers in your area."
     },
     "footerSubtitle": "Empowering the neighborhood economy.",
     "footerRights": "All rights reserved."
