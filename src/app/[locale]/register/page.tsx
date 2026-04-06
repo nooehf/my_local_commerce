@@ -45,6 +45,7 @@ export default function Register() {
         data: {
           full_name: fullName,
           business_name: businessName,
+          role: 'admin',
           locale,
         }
       },
